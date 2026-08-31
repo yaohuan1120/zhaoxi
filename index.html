@@ -134,6 +134,7 @@
       :root[data-theme="dark"] .journal-card:before{background:linear-gradient(90deg,rgba(143,164,199,.18),transparent);border-color:rgba(160,182,218,.2)}
       :root[data-theme="dark"] .journal-title-input,:root[data-theme="dark"] .journal-body-input,:root[data-theme="dark"] .journal-date-control input{color:var(--navy)!important}
       :root[data-theme="dark"] .journal-title-input{border-color:rgba(177,197,228,.22)}
+      @media(min-width:611px){body.journal-mode .main-content{padding-top:36px}}
       @media(max-width:600px){.theme-picker{gap:12px;margin-top:12px}}
     </style>
   </head>
@@ -200,7 +201,7 @@
 
         <section class="view journal-view" id="journalView">
           <div class="journal-topbar">
-            <div class="journal-heading"><p id="journalDateLabel"></p><h2>日志</h2></div>
+            <div class="journal-heading"><p id="journalDateLabel"></p></div>
             <div class="journal-actions"><button class="journal-action" id="timeTravelButton" type="button">时光倒流</button><button class="journal-action primary" id="presentButton" type="button">把握当下</button></div>
           </div>
           <div class="journal-date-nav">
