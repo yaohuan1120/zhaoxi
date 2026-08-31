@@ -19,6 +19,44 @@ function applyTheme(theme = selectedTheme()) {
   });
 }
 
+function workspaceBackground() {
+  const value = data.workspaceBackground;
+  return typeof value === 'string' && value.startsWith('data:image/') ? value : '';
+}
+function applyWorkspaceBackground() {
+  const mainContent = document.querySelector('.main-content');
+  const background = workspaceBackground();
+  mainContent.classList.toggle('has-custom-background', Boolean(background));
+  mainContent.style.setProperty('--workspace-background', background ? `url("${background}")` : 'none');
+  const status = document.querySelector('#workspaceBackgroundStatus');
+  const clearButton = document.querySelector('#clearWorkspaceBackground');
+  if (status) status.textContent = background ? '已启用自定义背景（已加固定柔光蒙层）。' : '未设置背景；图片只会显示在右侧工作区。';
+  if (clearButton) clearButton.hidden = !background;
+}
+function readImageFile(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('图片读取失败。'));
+    reader.onload = () => {
+      const image = new Image();
+      image.onerror = () => reject(new Error('图片无法打开。'));
+      image.onload = () => resolve(image);
+      image.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+async function compressWorkspaceBackground(file) {
+  const image = await readImageFile(file);
+  const maxEdge = 1440;
+  const ratio = Math.min(1, maxEdge / Math.max(image.naturalWidth, image.naturalHeight));
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.max(1, Math.round(image.naturalWidth * ratio));
+  canvas.height = Math.max(1, Math.round(image.naturalHeight * ratio));
+  canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height);
+  return canvas.toDataURL('image/jpeg', .8);
+}
+
 function toDateKey(date) { const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000); return local.toISOString().slice(0, 10); }
 function dateFromKey(value) { return new Date(`${value}T00:00:00`); }
 function loadData() {
@@ -149,12 +187,29 @@ document.querySelector('#timeTravelButton').onclick=()=>{const written=data.logs
 document.querySelector('#presentButton').onclick=()=>{journalDateKey=todayKey;journalWasTravelled=false;renderJournal();};
 document.querySelector('#settingsButton').onclick=()=>openLayer(document.querySelector('#settingsModal'));
 document.querySelectorAll('[data-theme-choice]').forEach(button=>button.onclick=()=>{data.theme=button.dataset.themeChoice;persist();applyTheme(data.theme);});
+document.querySelector('#workspaceBackgroundInput').onchange=async event=>{
+  const file=event.target.files?.[0];
+  event.target.value='';
+  if(!file)return;
+  if(!file.type.startsWith('image/')){window.alert('请选择图片文件。');return;}
+  const previous=data.workspaceBackground;
+  try{
+    data.workspaceBackground=await compressWorkspaceBackground(file);
+    persist();
+    applyWorkspaceBackground();
+  }catch(error){
+    data.workspaceBackground=previous;
+    window.alert(error?.name==='QuotaExceededError'?'图片过大，无法保存。请换一张更小的图片。':(error?.message||'背景图片设置失败。'));
+  }
+};
+document.querySelector('#clearWorkspaceBackground').onclick=()=>{delete data.workspaceBackground;persist();applyWorkspaceBackground();};
 document.querySelector('.mobile-menu').onclick=()=>document.body.classList.toggle('mobile-nav-open');
 document.querySelectorAll('[data-close-dialog]').forEach(button=>button.addEventListener('click',()=>closeLayer(button.closest('.modal-layer'))));
 document.querySelectorAll('.modal-layer').forEach(layer=>layer.addEventListener('pointerdown',event=>{if(event.target===layer) closeLayer(layer);}));
 document.addEventListener('keydown',event=>{if(event.key==='Escape')document.querySelectorAll('.modal-layer:not([hidden])').forEach(closeLayer);});
 populateTimeOptions();
 applyTheme();
+applyWorkspaceBackground();
 render();
 setInterval(()=>{renderDashboard();bindDynamic();},60000);
 let alignmentFrame;
