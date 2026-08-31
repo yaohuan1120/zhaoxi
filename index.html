@@ -86,8 +86,7 @@
         background-size:13px 13px!important;
       }
       .overview-panel .deadline-row{grid-template-columns:max-content minmax(0,1fr) auto 22px;gap:18px}
-      .overview-panel .deadline-item .delete-item{grid-column:4;justify-self:end;opacity:0}
-      .overview-panel .deadline-item:hover .delete-item{opacity:1}
+      .overview-panel .deadline-item .delete-item{grid-column:4;justify-self:end;opacity:1}
     </style>
   </head>
   <body>
@@ -188,6 +187,6 @@
       </section>
     </div>
     <div class="modal-layer" id="settingsModal" hidden><section class="task-modal settings-modal" role="dialog" aria-modal="true" aria-labelledby="settingsModalTitle"><form><div class="modal-heading"><div><h2 id="settingsModalTitle">设置</h2></div><button class="close-button" type="button" data-close-dialog aria-label="关闭">关闭</button></div><div class="settings-row"><div><strong>数据同步</strong><small>目前数据保存在此设备浏览器中。下一步将接入账户和云端同步。</small></div><span class="status-chip">准备中</span></div><div class="settings-row"><div><strong>苹果日历</strong><small>原生 iPhone App 将支持授权后自动写入系统日历。</small></div><span class="status-chip">规划中</span></div><div class="modal-actions"><button class="primary-button" type="button" data-close-dialog>知道了</button></div></form></section></div>
-    <script src="app.js?v=34"></script>
+    <script src="app.js?v=35"></script>
   </body>
 </html>
