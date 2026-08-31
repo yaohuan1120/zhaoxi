@@ -84,12 +84,10 @@ function renderCalendar() {
 function renderJournal() {
   const entry = data.logs.find(log => log.date === journalDateKey);
   const hasContent = Boolean(entry && (entry.title.trim() || entry.content.trim()));
-  const pageIndex = data.logs.filter(log => log.date <= journalDateKey && (log.title.trim() || log.content.trim())).length;
   document.querySelector('#journalDateLabel').textContent = formatJournalDate(journalDateKey);
   document.querySelector('#journalWeekday').textContent = journalDateKey === todayKey
     ? '今日手记'
     : (journalDateKey > todayKey ? '未来手记' : '往日手记');
-  document.querySelector('#journalPageNumber').textContent = `第 ${Math.max(1, pageIndex)} 页`;
   document.querySelector('#journalDatePicker').value = journalDateKey;
   document.querySelector('#journalTitleInput').value = entry?.title || '';
   document.querySelector('#journalBodyInput').value = entry?.content || '';
