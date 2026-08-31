@@ -134,6 +134,7 @@
       :root[data-theme="dark"] .journal-card:before{background:linear-gradient(90deg,rgba(143,164,199,.18),transparent);border-color:rgba(160,182,218,.2)}
       :root[data-theme="dark"] .journal-title-input,:root[data-theme="dark"] .journal-body-input,:root[data-theme="dark"] .journal-date-control input{color:var(--navy)!important}
       :root[data-theme="dark"] .journal-title-input{border-color:rgba(177,197,228,.22)}
+      .journal-card-header time{color:var(--muted);font-size:13px!important;font-weight:500;letter-spacing:.08em}
       @media(min-width:611px){body.journal-mode .main-content{padding-top:36px}}
       @media(max-width:600px){.theme-picker{gap:12px;margin-top:12px}}
     </style>
@@ -209,7 +210,7 @@
           </div>
           <div class="journal-stage" id="journalStage">
             <article class="journal-card">
-              <header class="journal-card-header"><span id="journalWeekday"></span></header>
+              <header class="journal-card-header"><span id="journalWeekday"></span><time id="journalCardDate"></time></header>
               <input class="journal-title-input" id="journalTitleInput" maxlength="80" placeholder="给今天留一个标题" aria-label="日志标题"/>
               <textarea class="journal-body-input" id="journalBodyInput" maxlength="5000" placeholder="记录此刻的想法、发生的事，或想记住的一句话。" aria-label="日志正文"></textarea>
               <span class="journal-empty-note">这一页，等你慢慢写下。</span>
@@ -236,6 +237,6 @@
       </section>
     </div>
     <div class="modal-layer" id="settingsModal" hidden><section class="task-modal settings-modal" role="dialog" aria-modal="true" aria-labelledby="settingsModalTitle"><form><div class="modal-heading"><div><h2 id="settingsModalTitle">设置</h2></div><button class="close-button" type="button" data-close-dialog aria-label="关闭">关闭</button></div><div class="settings-row theme-settings-row"><div><strong>主题设计</strong><small>选择喜欢的色系，导航、高亮、按钮和日历标记会一起变化。</small></div><div class="theme-picker" role="group" aria-label="选择主题色"><button class="theme-dot" type="button" data-theme-choice="blue" aria-label="晴空蓝" title="晴空蓝"></button><button class="theme-dot" type="button" data-theme-choice="mint" aria-label="薄荷绿" title="薄荷绿"></button><button class="theme-dot" type="button" data-theme-choice="lavender" aria-label="浅紫色" title="浅紫色"></button><button class="theme-dot" type="button" data-theme-choice="yellow" aria-label="鹅黄色" title="鹅黄色"></button><button class="theme-dot" type="button" data-theme-choice="pink" aria-label="浅粉色" title="浅粉色"></button><button class="theme-dot" type="button" data-theme-choice="orange" aria-label="浅橙色" title="浅橙色"></button><button class="theme-dot" type="button" data-theme-choice="cyan" aria-label="浅青色" title="浅青色"></button><button class="theme-dot dark-theme-dot" type="button" data-theme-choice="dark" aria-label="夜幕黑" title="夜幕黑"></button></div></div><div class="settings-row"><div><strong>数据同步</strong><small>目前数据保存在此设备浏览器中。下一步将接入账户和云端同步。</small></div><span class="status-chip">准备中</span></div><div class="settings-row"><div><strong>苹果日历</strong><small>原生 iPhone App 将支持授权后自动写入系统日历。</small></div><span class="status-chip">规划中</span></div><div class="modal-actions"><button class="primary-button" type="button" data-close-dialog>知道了</button></div></form></section></div>
-    <script src="app.js?v=38"></script>
+    <script src="app.js?v=39"></script>
   </body>
 </html>

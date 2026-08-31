@@ -97,6 +97,7 @@ function renderJournal() {
   const entry = data.logs.find(log => log.date === journalDateKey);
   const hasContent = Boolean(entry && (entry.title.trim() || entry.content.trim()));
   document.querySelector('#journalDateLabel').textContent = formatJournalDate(journalDateKey);
+  document.querySelector('#journalCardDate').textContent = journalDateKey.replaceAll('-', '.');
   document.querySelector('#journalWeekday').textContent = journalDateKey === todayKey
     ? '今日手记'
     : (journalDateKey > todayKey ? '未来手记' : '往日手记');
