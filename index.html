@@ -117,13 +117,16 @@
       :root[data-theme="dark"] body{background:radial-gradient(circle at 76% 0,rgba(71,99,161,.19),transparent 32%),radial-gradient(circle at 12% 85%,rgba(35,115,129,.12),transparent 28%),var(--canvas);color:var(--ink)}
       :root[data-theme="dark"] .sidebar{background:rgba(12,18,28,.78);border-color:var(--line);backdrop-filter:blur(20px)}
       :root[data-theme="dark"] .panel,:root[data-theme="dark"] .calendar-card{background:rgba(22,31,45,.7)!important;border-color:var(--line);backdrop-filter:blur(16px)}
+      :root[data-theme="dark"] .overview-section{background:rgba(22,31,45,.72)!important;border-color:var(--line)!important;box-shadow:0 15px 42px rgba(0,0,0,.22);backdrop-filter:blur(16px)}
+      :root[data-theme="dark"] .overview-section+.overview-section{border-left-color:var(--line)!important}
+      :root[data-theme="dark"] .overview-panel .schedule-list,:root[data-theme="dark"] .overview-panel .deadline-list{background:rgba(116,144,205,.10)!important;border:1px solid rgba(182,204,244,.10);scrollbar-color:rgba(169,193,255,.35) transparent}
       :root[data-theme="dark"] .calendar-day,:root[data-theme="dark"] .calendar-day.outside{background:rgba(15,23,35,.58)!important;border-color:var(--line)}
       :root[data-theme="dark"] .weekdays,:root[data-theme="dark"] .journal-date-control,:root[data-theme="dark"] .journal-action,:root[data-theme="dark"] .task-modal{background:rgba(22,31,45,.9)!important;border-color:var(--line);color:var(--ink)}
       :root[data-theme="dark"] .task-modal input,:root[data-theme="dark"] .task-modal textarea,:root[data-theme="dark"] .task-modal select{background:rgba(9,15,24,.7)!important;border-color:var(--line);color:var(--ink)}
       :root[data-theme="dark"] .calendar-task,:root[data-theme="dark"] .calendar-event{background:rgba(95,126,190,.3)!important;color:var(--navy)!important}
       :root[data-theme="dark"] .calendar-deadline,:root[data-theme="dark"] .calendar-hint i{background:rgba(133,164,232,.42)!important}
-      :root[data-theme="dark"] .deadline-card{background:linear-gradient(135deg,rgba(64,86,132,.52),rgba(25,36,57,.62))!important;border:1px solid rgba(179,201,242,.11)}
-      :root[data-theme="dark"] .deadline-card:before{background:rgba(134,163,226,.13)}
+      :root[data-theme="dark"] .overview-panel .deadline-card{background:transparent!important;border:0!important;box-shadow:none!important}
+      :root[data-theme="dark"] .overview-panel .deadline-card:before{display:none!important}
       :root[data-theme="dark"] .secondary-button,:root[data-theme="dark"] .today-button,:root[data-theme="dark"] .icon-button,:root[data-theme="dark"] .close-button,:root[data-theme="dark"] .status-chip{background:rgba(255,255,255,.07)!important;color:var(--muted)!important}
       :root[data-theme="dark"] .journal-stage:before{background:#151f2d;border-color:var(--line)}
       :root[data-theme="dark"] .journal-stage:after{background:#1a2637;border-color:var(--line)}
