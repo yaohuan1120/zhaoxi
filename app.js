@@ -6,6 +6,18 @@ let data = loadData();
 let journalDateKey = todayKey;
 let journalWasTravelled = false;
 let draggingTaskId = null;
+const themeKeys = ['blue', 'mint', 'lavender', 'yellow', 'pink', 'orange', 'cyan'];
+
+function selectedTheme() { return themeKeys.includes(data.theme) ? data.theme : 'blue'; }
+function applyTheme(theme = selectedTheme()) {
+  const resolvedTheme = themeKeys.includes(theme) ? theme : 'blue';
+  document.documentElement.dataset.theme = resolvedTheme;
+  document.querySelectorAll('[data-theme-choice]').forEach(button => {
+    const active = button.dataset.themeChoice === resolvedTheme;
+    button.classList.toggle('active', active);
+    button.setAttribute('aria-pressed', String(active));
+  });
+}
 
 function toDateKey(date) { const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000); return local.toISOString().slice(0, 10); }
 function dateFromKey(value) { return new Date(`${value}T00:00:00`); }
@@ -135,11 +147,13 @@ document.querySelector('#prevMonth').onclick=()=>{activeDate.setMonth(activeDate
 document.querySelector('#timeTravelButton').onclick=()=>{const written=data.logs.filter(log=>log.title.trim()||log.content.trim());if(!written.length){journalDateKey=todayKey;journalWasTravelled=false;renderJournal();document.querySelector('#journalSaveStatus').textContent='还没有往日的日志，先从今天写起吧';return;}const choices=written.length>1?written.filter(log=>log.date!==journalDateKey):written;const picked=choices[Math.floor(Math.random()*choices.length)];journalDateKey=picked.date;journalWasTravelled=true;renderJournal();};
 document.querySelector('#presentButton').onclick=()=>{journalDateKey=todayKey;journalWasTravelled=false;renderJournal();};
 document.querySelector('#settingsButton').onclick=()=>openLayer(document.querySelector('#settingsModal'));
+document.querySelectorAll('[data-theme-choice]').forEach(button=>button.onclick=()=>{data.theme=button.dataset.themeChoice;persist();applyTheme(data.theme);});
 document.querySelector('.mobile-menu').onclick=()=>document.body.classList.toggle('mobile-nav-open');
 document.querySelectorAll('[data-close-dialog]').forEach(button=>button.addEventListener('click',()=>closeLayer(button.closest('.modal-layer'))));
 document.querySelectorAll('.modal-layer').forEach(layer=>layer.addEventListener('pointerdown',event=>{if(event.target===layer) closeLayer(layer);}));
 document.addEventListener('keydown',event=>{if(event.key==='Escape')document.querySelectorAll('.modal-layer:not([hidden])').forEach(closeLayer);});
 populateTimeOptions();
+applyTheme();
 render();
 setInterval(()=>{renderDashboard();bindDynamic();},60000);
 let alignmentFrame;

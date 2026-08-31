@@ -89,6 +89,31 @@
       .overview-panel .deadline-meta{display:flex;align-items:center;gap:8px;white-space:nowrap}
       .overview-panel .deadline-meta .delete-item{width:18px;padding:0;justify-self:auto;opacity:0}
       .overview-panel .deadline-item:hover .delete-item{opacity:1}
+      :root{--theme-soft:#edf5ff;--theme-strong:#dbeefa;--theme-hover:#f5f9ff;--theme-ring:rgba(79,132,247,.22);--theme-shadow:rgba(79,132,247,.18);--theme-progress-start:#6292fa;--theme-progress-end:#73b6fb}
+      :root[data-theme="mint"]{--blue:#56a982;--theme-soft:#edf8f2;--theme-strong:#d8eee2;--theme-hover:#f5fbf7;--theme-ring:rgba(86,169,130,.22);--theme-shadow:rgba(86,169,130,.18);--theme-progress-start:#58ae85;--theme-progress-end:#7fc7a6}
+      :root[data-theme="lavender"]{--blue:#9075cf;--theme-soft:#f4f0ff;--theme-strong:#e5dbfa;--theme-hover:#faf8ff;--theme-ring:rgba(144,117,207,.22);--theme-shadow:rgba(144,117,207,.18);--theme-progress-start:#9278d2;--theme-progress-end:#b09aea}
+      :root[data-theme="yellow"]{--blue:#bd9430;--theme-soft:#fff8e1;--theme-strong:#f7e7ad;--theme-hover:#fffdf5;--theme-ring:rgba(189,148,48,.22);--theme-shadow:rgba(189,148,48,.18);--theme-progress-start:#cba23c;--theme-progress-end:#e2c766}
+      :root[data-theme="pink"]{--blue:#cf7798;--theme-soft:#fff0f4;--theme-strong:#f6d9e4;--theme-hover:#fff8fa;--theme-ring:rgba(207,119,152,.22);--theme-shadow:rgba(207,119,152,.18);--theme-progress-start:#d681a1;--theme-progress-end:#e7a5bc}
+      :root[data-theme="orange"]{--blue:#cd8651;--theme-soft:#fff3ea;--theme-strong:#f6dbc7;--theme-hover:#fff9f5;--theme-ring:rgba(205,134,81,.22);--theme-shadow:rgba(205,134,81,.18);--theme-progress-start:#d48e58;--theme-progress-end:#e8ae80}
+      :root[data-theme="cyan"]{--blue:#4f9ba5;--theme-soft:#eaf8f8;--theme-strong:#cfeaec;--theme-hover:#f4fcfc;--theme-ring:rgba(79,155,165,.22);--theme-shadow:rgba(79,155,165,.18);--theme-progress-start:#539fa9;--theme-progress-end:#79bdc5}
+      .main-nav .nav-item.active,.overview-panel .schedule-list,.overview-panel .deadline-list,.calendar-task,.calendar-event{background:var(--theme-soft)!important}
+      .calendar-deadline,.calendar-hint i{background:var(--theme-strong)!important}
+      .task-item:hover{background:var(--theme-hover)!important}
+      .task-item.dragging{background:var(--theme-soft)!important}
+      .task-item.drag-over{background:var(--theme-hover)!important;box-shadow:inset 0 2px 0 var(--blue)!important}
+      .progress-line span{background:linear-gradient(90deg,var(--theme-progress-start),var(--theme-progress-end))!important}
+      .primary-button{background:var(--blue)!important;box-shadow:0 6px 15px var(--theme-shadow)!important}
+      .choice-card:has(input:checked){border-color:var(--blue)!important;background:var(--theme-hover)!important;color:var(--blue)!important}
+      .task-modal input:focus,.task-modal select:focus,.task-modal textarea:focus{border-color:var(--blue)!important;box-shadow:0 0 0 3px var(--theme-ring)!important}
+      .journal-action.primary{border-color:var(--theme-strong)!important;background:var(--theme-soft)!important;color:var(--blue)!important}
+      .theme-settings-row{align-items:center!important}
+      .theme-picker{display:flex;align-items:center;justify-content:flex-end;gap:9px;flex-wrap:wrap}
+      .theme-dot{width:18px;height:18px;padding:0;border:0;border-radius:50%;background:var(--dot);box-shadow:inset 0 0 0 1px rgba(38,54,77,.08);cursor:pointer;transition:transform .16s ease,box-shadow .16s ease}
+      .theme-dot:hover{transform:scale(1.12)}
+      .theme-dot:focus-visible{outline:2px solid var(--navy);outline-offset:3px}
+      .theme-dot.active{box-shadow:0 0 0 3px #fff,0 0 0 5px var(--dot)}
+      .theme-dot[data-theme-choice="blue"]{--dot:#4f84f7}.theme-dot[data-theme-choice="mint"]{--dot:#56a982}.theme-dot[data-theme-choice="lavender"]{--dot:#9075cf}.theme-dot[data-theme-choice="yellow"]{--dot:#d4ac42}.theme-dot[data-theme-choice="pink"]{--dot:#d77e9f}.theme-dot[data-theme-choice="orange"]{--dot:#d98e56}.theme-dot[data-theme-choice="cyan"]{--dot:#4f9ba5}
+      @media(max-width:600px){.theme-settings-row{align-items:flex-start!important}.theme-picker{justify-content:flex-start;margin-top:10px}.theme-settings-row{flex-direction:column}}
     </style>
   </head>
   <body>
@@ -188,7 +213,7 @@
       </form>
       </section>
     </div>
-    <div class="modal-layer" id="settingsModal" hidden><section class="task-modal settings-modal" role="dialog" aria-modal="true" aria-labelledby="settingsModalTitle"><form><div class="modal-heading"><div><h2 id="settingsModalTitle">设置</h2></div><button class="close-button" type="button" data-close-dialog aria-label="关闭">关闭</button></div><div class="settings-row"><div><strong>数据同步</strong><small>目前数据保存在此设备浏览器中。下一步将接入账户和云端同步。</small></div><span class="status-chip">准备中</span></div><div class="settings-row"><div><strong>苹果日历</strong><small>原生 iPhone App 将支持授权后自动写入系统日历。</small></div><span class="status-chip">规划中</span></div><div class="modal-actions"><button class="primary-button" type="button" data-close-dialog>知道了</button></div></form></section></div>
-    <script src="app.js?v=36"></script>
+    <div class="modal-layer" id="settingsModal" hidden><section class="task-modal settings-modal" role="dialog" aria-modal="true" aria-labelledby="settingsModalTitle"><form><div class="modal-heading"><div><h2 id="settingsModalTitle">设置</h2></div><button class="close-button" type="button" data-close-dialog aria-label="关闭">关闭</button></div><div class="settings-row theme-settings-row"><div><strong>主题设计</strong><small>选择喜欢的色系，导航、高亮、按钮和日历标记会一起变化。</small></div><div class="theme-picker" role="group" aria-label="选择主题色"><button class="theme-dot" type="button" data-theme-choice="blue" aria-label="晴空蓝" title="晴空蓝"></button><button class="theme-dot" type="button" data-theme-choice="mint" aria-label="薄荷绿" title="薄荷绿"></button><button class="theme-dot" type="button" data-theme-choice="lavender" aria-label="浅紫色" title="浅紫色"></button><button class="theme-dot" type="button" data-theme-choice="yellow" aria-label="鹅黄色" title="鹅黄色"></button><button class="theme-dot" type="button" data-theme-choice="pink" aria-label="浅粉色" title="浅粉色"></button><button class="theme-dot" type="button" data-theme-choice="orange" aria-label="浅橙色" title="浅橙色"></button><button class="theme-dot" type="button" data-theme-choice="cyan" aria-label="浅青色" title="浅青色"></button></div></div><div class="settings-row"><div><strong>数据同步</strong><small>目前数据保存在此设备浏览器中。下一步将接入账户和云端同步。</small></div><span class="status-chip">准备中</span></div><div class="settings-row"><div><strong>苹果日历</strong><small>原生 iPhone App 将支持授权后自动写入系统日历。</small></div><span class="status-chip">规划中</span></div><div class="modal-actions"><button class="primary-button" type="button" data-close-dialog>知道了</button></div></form></section></div>
+    <script src="app.js?v=37"></script>
   </body>
 </html>
