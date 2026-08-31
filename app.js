@@ -6,7 +6,7 @@ let data = loadData();
 let journalDateKey = todayKey;
 let journalWasTravelled = false;
 let draggingTaskId = null;
-const themeKeys = ['blue', 'mint', 'lavender', 'yellow', 'pink', 'orange', 'cyan'];
+const themeKeys = ['blue', 'mint', 'lavender', 'yellow', 'pink', 'orange', 'cyan', 'dark'];
 
 function selectedTheme() { return themeKeys.includes(data.theme) ? data.theme : 'blue'; }
 function applyTheme(theme = selectedTheme()) {
