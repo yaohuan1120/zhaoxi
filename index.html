@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#f7f9fc" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="朝夕" />
+    <title>朝夕 · 我的日程工作台</title>
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      .modal-layer{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:16px;background:rgba(18,31,51,.3);backdrop-filter:blur(3px)}
+      .modal-layer[hidden]{display:none}
+      .modal-layer .task-modal{width:min(530px,100%);max-height:calc(100vh - 32px);overflow:auto;background:#fff}
+      .close-button{position:relative;display:block!important;padding:0;line-height:1;font-size:0!important}
+      .close-button:before,.close-button:after{content:"";position:absolute;left:50%;top:50%;width:12px;height:2px;border-radius:2px;background:#768397}
+      .close-button:before{transform:translate(-50%,-50%) rotate(45deg)}
+      .close-button:after{transform:translate(-50%,-50%) rotate(-45deg)}
+      body{font-size:14px;font-weight:500;letter-spacing:.005em;-webkit-font-smoothing:antialiased}
+      .brand{font-size:20px;font-weight:680;letter-spacing:.02em}.brand-mark{font-size:27px}
+      .date-greeting h1,.panel h2,.calendar-title-row h2,.modal-heading h2{font-size:18px;font-weight:650;letter-spacing:-.02em}
+      .date-greeting p{font-size:12px;margin:6px 0 0}.eyebrow{font-size:11px;letter-spacing:.08em;font-weight:600;color:#9ba7b8}
+      .panel h2{font-size:17px}.panel-heading{margin-bottom:16px}.task-title,.deadline-card h3,.schedule-row strong{font-size:14px;font-weight:600}
+      .task-meta,.schedule-row small,.deadline-card p,.progress-copy,.calendar-hint{font-size:12px}.primary-button,.secondary-button,.today-button{font-size:14px;font-weight:600}
+      .calendar-title-row h2{font-size:18px}.weekdays span,.day-number{font-size:12px}.task-modal label{font-size:14px}.apple-notice strong{font-size:13px}.apple-notice small{font-size:12px}
+      .topbar{justify-content:flex-start}.dashboard-grid{grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch}
+      .overview-panel{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:28px;padding:19px 23px;min-height:188px}.overview-section{min-width:0}.overview-section+.overview-section{border-left:1px solid var(--line);padding-left:28px}.overview-panel .panel-heading{margin-bottom:10px}.overview-panel .schedule-row{padding:7px 0}.overview-panel .deadline-list{display:block}.overview-panel .deadline-card{padding:12px 15px}.today-panel,.longterm-panel{grid-row:auto;min-height:420px}
+      .brand-mark{display:grid;place-items:center;width:27px;height:27px;color:#4f84f7}.brand-mark svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}.nav-icon{display:grid!important;place-items:center;width:19px!important;height:19px}.nav-icon svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+      .task-meta,.schedule-row small,.deadline-card p,.progress-copy,.calendar-hint,.apple-notice small,.settings-row small{font-size:13px;color:#78879a}.eyebrow{font-size:12px}.time-fields select,.deadline-fields select{width:100%;border:1px solid #dce4ed;border-radius:8px;padding:10px;color:#617087;outline:none;background:#fff;font-size:14px;height:42px}.time-fields select:focus,.deadline-fields select:focus{border-color:#7fa7f8;box-shadow:0 0 0 3px #eaf1ff}.deadline-fields{grid-template-columns:1fr 1fr}
+      @media(max-width:610px){.overview-panel{grid-template-columns:1fr;gap:18px}.overview-section+.overview-section{border-left:0;border-top:1px solid var(--line);padding:18px 0 0}.today-panel,.longterm-panel{min-height:0}.dashboard-grid{grid-template-columns:1fr}.time-fields,.deadline-fields{grid-template-columns:1fr 1fr}.time-fields label:first-child{grid-column:1/-1}}
+      /* 三档字体：品牌 / 模块标题与主导航 / 正文 */
+      .app-shell *,.modal-layer *{font-size:16px!important}
+      .brand>span:last-child{font-size:27px!important;font-weight:700!important}
+      .main-nav .nav-item,.panel h2{font-size:20px!important;font-weight:650!important}.modal-layer .close-button{font-size:0!important}
+      body.calendar-mode .topbar{display:none}body.calendar-mode .main-content{padding-top:28px}body.calendar-mode .calendar-toolbar{margin-top:0}
+      .calendar-task,.calendar-event,.calendar-deadline,.calendar-task span,.calendar-event span{font-size:12px!important;line-height:1.25;padding:3px 4px}.calendar-task,.calendar-event{margin:2px 0;cursor:pointer;display:flex;gap:3px;align-items:center}.calendar-task:hover,.calendar-event:hover{filter:brightness(.96)}.calendar-check{width:12px;height:12px;margin:0;flex:0 0 auto}.calendar-day{cursor:copy}.calendar-item{cursor:pointer}
+      .overview-panel .schedule-list{display:block;background:linear-gradient(135deg,#edf6ff,#f6faff);border-radius:12px;padding:3px 15px}.overview-panel .schedule-row{grid-template-columns:68px 1fr;gap:12px;padding:9px 0;border-bottom:1px solid rgba(132,165,207,.2)}.overview-panel .schedule-row:last-child{border-bottom:0}.overview-panel .schedule-date{align-self:center;justify-self:start;background:#fff;color:#397be7;border-radius:6px;padding:5px 7px;font-weight:700;line-height:1;white-space:nowrap}.overview-panel .schedule-row strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.overview-panel .schedule-row small{margin-top:3px;color:#6e89ab}
+      .main-content{max-width:none;padding-left:32px;padding-right:32px}.topbar{min-height:92px}.date-greeting p{margin:0}.dashboard-grid{gap:16px}.overview-panel{min-height:0;padding:18px 22px}.today-panel,.longterm-panel{min-height:390px}
+      .overview-panel .schedule-list,.overview-panel .deadline-list{height:132px;overflow-y:auto;background:linear-gradient(135deg,#edf6ff,#f6faff);border-radius:12px;padding:3px 15px;scrollbar-width:thin;scrollbar-color:#b8d3ee transparent}.overview-panel .deadline-list{display:block}.overview-panel .schedule-row,.overview-panel .deadline-row{display:grid;grid-template-columns:72px minmax(0,1fr) auto;gap:10px;align-items:center;min-height:42px;padding:7px 0;border-bottom:1px solid rgba(132,165,207,.2)}.overview-panel .schedule-row:last-child,.overview-panel .deadline-row:last-child{border-bottom:0}.overview-panel .schedule-date,.overview-panel .countdown{align-self:center;justify-self:start;margin:0!important;background:#fff;color:#397be7;border-radius:6px;padding:5px 7px;font-weight:700;line-height:1;white-space:nowrap}.overview-panel .schedule-row strong,.overview-panel .deadline-row strong{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.overview-panel .schedule-row small,.overview-panel .deadline-row small{margin:0;color:#6e89ab;white-space:nowrap}.overview-panel .deadline-card{padding:0;background:transparent;border-radius:0;overflow:visible}.overview-panel .deadline-card:before{display:none}.overview-panel .deadline-card h3,.overview-panel .deadline-card p{display:none}
+      .overview-panel .deadline-row{grid-template-columns:126px minmax(0,1fr) auto}
+      .overview-panel .deadline-row{grid-template-columns:max-content minmax(0,1fr) auto;gap:18px}
+      .overview-panel .schedule-date,.overview-panel .countdown{font-size:13px!important;padding:3px 6px;line-height:1.1;border-radius:5px}
+      .task-item{align-items:center}.task-schedule-time{margin-left:auto;color:#6685b9;white-space:nowrap;font-weight:600}.task-item .task-meta{margin-top:3px}.task-item .time-badge{display:none}
+      .overview-panel{background:transparent;border:0;box-shadow:none;padding:0;gap:16px}.overview-section{background:#fff;border:1px solid var(--line);border-radius:15px;box-shadow:var(--shadow);padding:18px 22px}.overview-section+.overview-section{border-left:1px solid var(--line);padding:18px 22px}.overview-panel .panel-heading{margin-bottom:10px}
+      .task-item{display:grid;grid-template-columns:22px minmax(0,1fr) max-content 22px;gap:11px;width:100%;padding:12px 10px;position:relative}.task-item .check{grid-column:1}.task-item .task-main{grid-column:2;min-width:0}.task-item .task-schedule-time{grid-column:3;margin-left:0}.task-item .delete-item{position:static;transform:none;grid-column:4;align-self:center;justify-self:end}
+      .overview-panel .schedule-date,.overview-panel .countdown{position:relative;background:transparent;color:#5e7898;padding:0 0 0 9px!important;border-radius:0;font-size:15px!important;font-weight:700}.overview-panel .schedule-date:before,.overview-panel .countdown:before{content:"";position:absolute;left:0;top:2px;bottom:2px;width:2px;background:#8baed8;border-radius:2px}.overview-panel .schedule-row small,.overview-panel .deadline-row small{color:#7c8b9d}.task-schedule-time{color:#73839a!important}
+      /* Typography reset: brand / navigation & headings / content */
+      .app-shell *,.modal-layer *{font-size:15px!important;letter-spacing:0}.app-shell{font-weight:450;color:#26364d}.brand>span:last-child{font-size:26px!important;font-weight:700!important;letter-spacing:.015em}.main-nav .nav-item,.panel h2{font-size:19px!important;font-weight:650!important;letter-spacing:-.015em}.date-greeting p{font-weight:500;color:#7a899d}.task-title,.schedule-row strong,.deadline-row strong{font-weight:600!important}.task-meta,.progress-copy,.schedule-row small,.deadline-row small,.empty-copy{font-weight:450}.calendar-task,.calendar-event,.calendar-deadline,.calendar-task span,.calendar-event span{font-size:12px!important}.brand-mark{width:30px;height:30px}.brand-mark .simple-logo{width:28px;height:28px;display:block!important;fill:none;stroke:#5d8cff;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+      .overview-panel .schedule-row small,.task-schedule-time{font-size:15px!important;font-weight:450!important;color:#7c8b9d!important;line-height:1.25!important;letter-spacing:0!important;font-variant-numeric:tabular-nums}
+      .apple-notice{border-radius:12px;background:#f5f8fc}.apple-notice strong{font-size:14px!important;font-weight:600}.apple-notice small{font-size:12px!important;line-height:1.5}.notice-icon{display:grid;place-items:center;flex:0 0 auto;width:19px;height:19px;margin-top:1px;color:#6c85a7}.notice-icon svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+      .overview-panel .text-button{font-weight:650!important}
+      .form-error{margin:-4px 0 13px;color:#c75b64;font-weight:600!important}.form-error[hidden]{display:none!important}.time-invalid{border-color:#d98087!important;box-shadow:0 0 0 3px rgba(217,128,135,.12)!important}
+      .task-item{cursor:pointer}.task-item[draggable="true"]{cursor:grab}.task-item[draggable="true"]:active{cursor:grabbing}.task-item.dragging{opacity:.42;background:#edf4ff}.task-item.drag-over{box-shadow:inset 0 2px 0 var(--blue);background:#f5f8ff}.task-item .check,.task-item .delete-item{cursor:default}.overview-panel .schedule-row{cursor:pointer}
+      .task-schedule-time{display:flex;align-items:center;justify-content:flex-end;gap:16px;will-change:transform}.task-date-inline{color:var(--muted);font-weight:450!important;font-variant-numeric:tabular-nums;flex:0 0 auto}.task-time-inline{font-variant-numeric:tabular-nums;flex:0 0 auto}.task-schedule-time.date-only .task-time-inline{width:87px}.overview-panel .schedule-row small{will-change:transform}
+      .overview-panel .schedule-row{padding-right:0}@media(max-width:610px){.overview-panel .schedule-row{padding-right:7px}}
+      /* 统一色彩：主蓝 / 深色正文 / 辅助灰 */
+      :root{--blue:#4f84f7;--navy:#26364d;--muted:#7c8b9d;--soft-muted:#9aa8b8;--line:#e5ebf2}
+      .brand-mark,.brand-mark .simple-logo,.main-nav .nav-item.active,.main-nav .nav-item.active .nav-icon,.overview-panel .text-button,.add-inline,.overview-panel .schedule-date,.overview-panel .countdown,.journal-action.primary,.journal-card-footer .journal-mark{color:var(--blue)!important}.brand-mark .simple-logo{stroke:var(--blue)!important}
+      .overview-panel .schedule-date:before,.overview-panel .countdown:before{background:var(--blue)!important}
+      .date-greeting p,.progress-copy,.task-meta,.task-schedule-time,.overview-panel .schedule-row small,.overview-panel .deadline-row small,.count-pill,.calendar-hint,.sync-status,.settings-row small,.apple-notice small,.journal-heading p,.journal-card-header span,.journal-card-footer{color:var(--muted)!important}
+      .main-nav .nav-item:not(.active),.nav-item.muted,.nav-item:not(.active) .nav-icon,.calendar-title-row,.weekdays span,.day-number,.journal-empty-note{color:var(--muted)!important}
+      .panel h2,.task-title,.schedule-row strong,.deadline-row strong,.journal-title-input,.journal-body-input{color:var(--navy)!important}
+      body.journal-mode .topbar{display:none}body.journal-mode .main-content{padding-top:28px}
+      .journal-view{width:min(100%,900px);margin:0 auto;padding:2px 0 46px}.journal-topbar,.journal-date-nav{display:flex;align-items:center;justify-content:space-between;gap:16px}.journal-topbar{margin-bottom:20px}.journal-heading p{margin:0 0 5px;color:#7a899d;font-weight:450}.journal-heading h2{margin:0;font-size:19px!important;font-weight:650!important;letter-spacing:-.015em}.journal-actions{display:flex;align-items:center;gap:9px}.journal-action{border:1px solid #dde6f0;border-radius:10px;background:#fff;color:#536b89;padding:9px 12px;box-shadow:0 4px 14px rgba(42,63,96,.04);font-weight:600!important;transition:transform .18s,box-shadow .18s,border-color .18s}.journal-action:hover{transform:translateY(-1px);border-color:#b9cae0;box-shadow:0 8px 18px rgba(42,63,96,.08)}.journal-action.primary{border-color:#dbe7ff;background:#f2f6ff;color:#4d7fdf}.journal-date-nav{justify-content:center;margin:0 0 23px}.journal-date-control{display:flex;align-items:center;gap:9px;padding:5px 9px;border:1px solid #e0e7ef;background:#fff;border-radius:11px;box-shadow:0 4px 16px rgba(42,63,96,.04)}.journal-date-control button{border:0;background:transparent;color:#607a9a;width:29px;height:29px;border-radius:7px;font-size:18px!important;line-height:1}.journal-date-control button:hover{background:#f1f5fa}.journal-date-control input{border:0;background:transparent;color:#334867;font-weight:600!important;outline:0;width:138px}.journal-stage{position:relative;margin:0 auto;padding:7px 43px 38px 0}.journal-stage:before,.journal-stage:after{content:"";position:absolute;border:1px solid #dce5ee;border-radius:8px 17px 17px 9px;box-shadow:0 11px 23px rgba(43,64,91,.075);z-index:0}.journal-stage:before{inset:34px 0 0 42px;background:#eaf0f7;transform:rotate(2.1deg)}.journal-stage:after{inset:18px 13px 12px 22px;background:#f8fafc;transform:rotate(-1.05deg);z-index:1}.journal-card{position:relative;z-index:2;min-height:475px;padding:37px 50px 34px 66px;border:1px solid #e4e8ee;border-radius:7px 18px 18px 8px;background:linear-gradient(90deg,rgba(255,255,255,.86) 0 45px,rgba(241,226,213,.75) 45px 47px,rgba(255,253,249,.96) 47px),repeating-linear-gradient(to bottom,transparent 0,transparent 34px,rgba(135,158,189,.15) 35px,transparent 36px);box-shadow:0 18px 34px rgba(42,58,82,.12);overflow:hidden;transition:transform .35s cubic-bezier(.2,.8,.2,1)}.journal-card:before{content:"";position:absolute;left:20px;top:0;bottom:0;width:11px;background:linear-gradient(90deg,rgba(211,220,230,.35),transparent);border-right:1px solid rgba(203,211,220,.42)}.journal-stage.time-travelled .journal-card{animation:journal-arrive .48s cubic-bezier(.2,.9,.25,1)}@keyframes journal-arrive{from{transform:translateY(-22px) rotate(-1.4deg);opacity:.2}to{transform:translateY(0) rotate(0);opacity:1}}.journal-card-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:28px}.journal-card-header span{color:#7b8ba2;font-weight:450}.journal-card-header .journal-page-number{font-variant-numeric:tabular-nums;color:#9caaba}.journal-title-input{display:block;width:100%;border:0;border-bottom:1px solid rgba(157,177,199,.36);outline:0;padding:0 0 12px;background:transparent;color:#25364f;font-size:19px!important;font-weight:650!important;letter-spacing:-.015em}.journal-title-input::placeholder,.journal-body-input::placeholder{color:#aab6c4}.journal-body-input{display:block;width:100%;height:285px;resize:none;border:0;outline:0;padding:15px 0 0;background:transparent;color:#43536a;line-height:36px!important;font-weight:450!important}.journal-card-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:14px;color:#91a0b0}.journal-card-footer span{font-size:13px!important}.journal-card-footer .journal-mark{color:#6c8cc0;font-weight:600!important}.journal-empty-note{position:absolute;right:49px;bottom:69px;color:#9aa8b8;font-size:13px!important;pointer-events:none}.journal-stage.has-content .journal-empty-note{display:none}@media(max-width:610px){.journal-view{padding-top:0}.journal-topbar{align-items:flex-start;flex-direction:column}.journal-actions{width:100%}.journal-action{flex:1;padding:9px 8px}.journal-stage{padding:6px 27px 28px 0}.journal-stage:before{inset:28px 0 0 27px}.journal-stage:after{inset:15px 8px 9px 14px}.journal-card{min-height:450px;padding:28px 28px 28px 44px}.journal-card:before{left:12px}.journal-body-input{height:275px}.journal-empty-note{right:28px;bottom:64px}.journal-date-nav{justify-content:flex-start}}
+    </style>
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <a class="brand" href="#" aria-label="朝夕首页"><span class="brand-mark" aria-hidden="true"><svg class="simple-logo" viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="16.5" rx="4"/><path d="M7.5 2.5v4M16.5 2.5v4M3 10h18M8 14h3M13 14h3"/></svg></span><span>朝夕</span></a>
+        <nav class="main-nav" aria-label="主菜单">
+          <button class="nav-item active" data-view="dashboard"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2"/></svg></span>工作台</button>
+          <button class="nav-item" data-view="calendar"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4M17 3v4M3 10h18M8 14h3M13 14h3M8 18h3"/></svg></span>日历</button>
+          <button class="nav-item" data-view="journal"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 4.5h10.5A2.5 2.5 0 0 1 19 7v13H8a3 3 0 0 0-3 3V7.5A3 3 0 0 1 8 4.5Z"/><path d="M8 9h7M8 13h7M8 17h4"/></svg></span>日志</button>
+        </nav>
+        <div class="sidebar-bottom">
+          <button class="nav-item muted" id="settingsButton"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.07.07-2.1 2.1-.07-.07a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.56V20.3h-3v-.1A1.7 1.7 0 0 0 10.7 18.6a1.7 1.7 0 0 0-1.88.34l-.07.07-2.1-2.1.07-.07A1.7 1.7 0 0 0 7.06 15a1.7 1.7 0 0 0-1.56-1.03h-.1v-3h.1A1.7 1.7 0 0 0 7.06 9.94a1.7 1.7 0 0 0-.34-1.88l-.07-.07 2.1-2.1.07.07a1.7 1.7 0 0 0 1.88.34 1.7 1.7 0 0 0 1.03-1.56v-.1h3v.1a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.88-.34l.07-.07 2.1 2.1-.07.07a1.7 1.7 0 0 0-.34 1.88 1.7 1.7 0 0 0 1.56 1.03h.1v3h-.1A1.7 1.7 0 0 0 19.4 15Z"/></svg></span>设置</button>
+          <div class="sync-status"><span></span>已安全保存到本机</div>
+        </div>
+      </aside>
+
+      <main class="main-content">
+        <header class="topbar">
+          <button class="mobile-menu" aria-label="打开菜单">☰</button>
+          <div class="date-greeting"><p id="todayLabel">2026年8月30日，星期日</p></div>
+        </header>
+
+        <section class="view active" id="dashboardView">
+          <div class="dashboard-grid">
+            <section class="panel overview-panel">
+              <div class="overview-section schedule-panel">
+                <div class="panel-heading"><div><h2>接下来</h2></div><button class="text-button" data-view="calendar">查看日历 →</button></div>
+                <div class="schedule-list" id="upcomingSchedule"></div>
+              </div>
+              <div class="overview-section deadlines-panel">
+                <div class="panel-heading"><div><h2>重要时间段</h2></div><button class="icon-button" id="openDeadlineModal" aria-label="添加时间段">＋</button></div>
+                <div class="deadline-list" id="deadlineList"></div>
+              </div>
+            </section>
+            <section class="panel today-panel">
+              <div class="panel-heading"><div><h2>最近待办</h2></div><span class="count-pill" id="todayCount">0 项</span></div>
+              <div class="progress-line"><span id="progressFill"></span></div>
+              <p class="progress-copy" id="progressCopy">今天还没有安排，给自己留一点空间。</p>
+              <div class="task-list" id="todayTasks"></div>
+              <button class="add-inline" data-quick-date="today" data-task-bucket="recent">＋ 添加最近待办</button>
+            </section>
+
+            <section class="panel longterm-panel">
+              <div class="panel-heading"><div><h2>长期待办</h2></div><span class="count-pill" id="longtermCount">0 项</span></div>
+              <div class="task-list compact" id="longtermTasks"></div>
+              <button class="add-inline" data-task-bucket="longterm">＋ 添加长期待办</button>
+            </section>
+          </div>
+        </section>
+
+        <section class="view" id="calendarView">
+          <div class="calendar-toolbar">
+            <div class="calendar-title-row"><button class="icon-button calendar-nav" id="prevMonth" aria-label="上个月">←</button><h2 id="calendarTitle"></h2><button class="icon-button calendar-nav" id="nextMonth" aria-label="下个月">→</button></div>
+            <button class="today-button" id="jumpToday">今天</button>
+          </div>
+          <section class="calendar-card">
+            <div class="weekdays"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span></div>
+            <div class="calendar-grid" id="calendarGrid"></div>
+          </section>
+          <p class="calendar-hint"><i></i> 浅蓝色为覆盖多天的重要时间段</p>
+        </section>
+
+        <section class="view journal-view" id="journalView">
+          <div class="journal-topbar">
+            <div class="journal-heading"><p id="journalDateLabel"></p><h2>日志</h2></div>
+            <div class="journal-actions"><button class="journal-action" id="timeTravelButton" type="button">时光倒流</button><button class="journal-action primary" id="presentButton" type="button">把握当下</button></div>
+          </div>
+          <div class="journal-date-nav">
+            <div class="journal-date-control"><button type="button" id="previousJournalDay" aria-label="前一天">←</button><input id="journalDatePicker" type="date" aria-label="日志日期"/><button type="button" id="nextJournalDay" aria-label="后一天">→</button></div>
+          </div>
+          <div class="journal-stage" id="journalStage">
+            <article class="journal-card">
+              <header class="journal-card-header"><span id="journalWeekday"></span><span class="journal-page-number" id="journalPageNumber"></span></header>
+              <input class="journal-title-input" id="journalTitleInput" maxlength="80" placeholder="给今天留一个标题" aria-label="日志标题"/>
+              <textarea class="journal-body-input" id="journalBodyInput" maxlength="5000" placeholder="记录此刻的想法、发生的事，或想记住的一句话。" aria-label="日志正文"></textarea>
+              <span class="journal-empty-note">这一页，等你慢慢写下。</span>
+              <footer class="journal-card-footer"><span id="journalSaveStatus">写下的内容会保存在本机</span><span class="journal-mark">朝夕 · 日志</span></footer>
+            </article>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div class="modal-layer" id="taskModal" hidden>
+      <section class="task-modal" role="dialog" aria-modal="true" aria-labelledby="taskModalTitle">
+      <form id="taskForm">
+        <div class="modal-heading"><div><h2 id="taskModalTitle">添加一个事项</h2></div><button class="close-button" type="button" data-close-dialog aria-label="关闭">关闭</button></div>
+        <label>事项名称<input required name="title" maxlength="80" placeholder="例如：完成选课方案" /></label>
+        <div class="type-choice"><label class="choice-card active"><input type="radio" name="itemType" value="task" checked />待办 <small>可选择日期和时间</small></label><label class="choice-card"><input type="radio" name="itemType" value="deadline" />时间段 <small>用于跨多天事项与倒计时</small></label></div>
+        <div class="time-fields" id="timeFields"><label>日期<input type="date" name="date" /></label><label>开始时间<select class="time-select" name="startTime" aria-label="开始时间"></select></label><label>结束时间<select class="time-select" name="endTime" aria-label="结束时间"></select></label></div>
+        <div class="deadline-fields hidden" id="deadlineFields"><label>开始日期<input type="date" name="deadlineStartDate" /></label><label>开始时间<select class="time-select" name="deadlineStartTime" aria-label="开始时间"></select></label><label>结束日期<input type="date" name="deadlineEndDate" /></label><label>结束时间<select class="time-select" name="deadlineEndTime" aria-label="结束时间"></select></label></div>
+        <p class="form-error" id="timeValidation" role="alert" hidden></p>
+        <label class="notes-label">备注 <textarea name="notes" rows="2" placeholder="可选"></textarea></label>
+        <div class="apple-notice"><span class="notice-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 10.5v5M12 7.5h.01"/></svg></span><div><strong>苹果日历同步</strong><small>原生 iPhone 版上线后，可将日程同步至系统日历，并默认提前 1 小时和 30 分钟提醒。</small></div></div>
+        <div class="modal-actions"><button class="secondary-button" type="button" data-close-dialog onclick="this.closest('dialog').close()">取消</button><button class="primary-button" type="submit">保存事项</button></div>
+      </form>
+      </section>
+    </div>
+    <div class="modal-layer" id="settingsModal" hidden><section class="task-modal settings-modal" role="dialog" aria-modal="true" aria-labelledby="settingsModalTitle"><form><div class="modal-heading"><div><h2 id="settingsModalTitle">设置</h2></div><button class="close-button" type="button" data-close-dialog aria-label="关闭">关闭</button></div><div class="settings-row"><div><strong>数据同步</strong><small>目前数据保存在此设备浏览器中。下一步将接入账户和云端同步。</small></div><span class="status-chip">准备中</span></div><div class="settings-row"><div><strong>苹果日历</strong><small>原生 iPhone App 将支持授权后自动写入系统日历。</small></div><span class="status-chip">规划中</span></div><div class="modal-actions"><button class="primary-button" type="button" data-close-dialog>知道了</button></div></form></section></div>
+    <script src="app.js?v=30"></script>
+  </body>
+</html>
