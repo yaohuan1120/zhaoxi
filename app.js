@@ -104,7 +104,7 @@ function renderJournal() {
   document.querySelector('#journalDatePicker').value = journalDateKey;
   document.querySelector('#journalTitleInput').value = entry?.title || '';
   document.querySelector('#journalBodyInput').value = entry?.content || '';
-  document.querySelector('#journalSaveStatus').textContent = journalWasTravelled ? '从记忆里抽出了这一页' : (hasContent ? '已保存至此设备的当前浏览器' : '写下的内容会保存在此设备的当前浏览器');
+  document.querySelector('#journalSaveStatus').textContent = journalWasTravelled ? '从记忆里抽出了这一页' : (hasContent ? '已悄悄保存到本机' : '写下的内容会保存在本机');
   const stage = document.querySelector('#journalStage');
   stage.classList.toggle('has-content', hasContent);
   stage.classList.toggle('time-travelled', journalWasTravelled);
@@ -124,7 +124,7 @@ function writeJournal() {
   } else if (existing) data.logs = data.logs.filter(log => log.date !== journalDateKey);
   persist();
   document.querySelector('#journalStage').classList.toggle('has-content', Boolean(title || content));
-  document.querySelector('#journalSaveStatus').textContent = title || content ? '已保存至此设备的当前浏览器' : '写下的内容会保存在此设备的当前浏览器';
+  document.querySelector('#journalSaveStatus').textContent = title || content ? '已悄悄保存到本机' : '写下的内容会保存在本机';
 }
 function bindJournal() {
   document.querySelector('#previousJournalDay').onclick = () => changeJournalDay(-1);
