@@ -204,8 +204,9 @@ function syncDashboardTimeAlignment(){
   const upcoming=[...document.querySelectorAll('#upcomingSchedule .schedule-row small')],recent=[...document.querySelectorAll('#todayTasks .task-schedule-time')];
   [...upcoming,...recent].forEach(element=>element.style.transform='');
   const scheduleRows=[...document.querySelectorAll('#upcomingSchedule .schedule-row')], scheduleContainer=document.querySelector('#upcomingSchedule'), deadlineList=document.querySelector('#deadlineList');
-  if(scheduleRows.length&&scheduleContainer&&deadlineList){
-    const rowHeight=scheduleRows[0].getBoundingClientRect().height;
+  if(scheduleContainer&&deadlineList){
+    const fallbackRowHeight=window.innerWidth<=610?50:42;
+    const rowHeight=scheduleRows[0]?.getBoundingClientRect().height||fallbackRowHeight;
     const highlightHeight=`${Math.round(rowHeight*3+6)}px`;
     scheduleContainer.style.height=highlightHeight;
     deadlineList.style.height=highlightHeight;
