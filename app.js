@@ -203,6 +203,12 @@ function renderDashboard() {
 function syncDashboardTimeAlignment(){
   const upcoming=[...document.querySelectorAll('#upcomingSchedule .schedule-row small')],recent=[...document.querySelectorAll('#todayTasks .task-schedule-time')];
   [...upcoming,...recent].forEach(element=>element.style.transform='');
+  const scheduleRows=[...document.querySelectorAll('#upcomingSchedule .schedule-row')], deadlineList=document.querySelector('#deadlineList');
+  if(scheduleRows.length&&deadlineList){
+    const rowHeight=scheduleRows[0].getBoundingClientRect().height;
+    deadlineList.style.height=`${Math.round(rowHeight*3+6)}px`;
+    deadlineList.querySelectorAll('.deadline-row').forEach(row=>row.style.height=`${Math.round(rowHeight)}px`);
+  }
   if(!upcoming.length||!recent.length)return;
   const scheduleList=document.querySelector('#upcomingSchedule').getBoundingClientRect();
   const deleteButtons=[...document.querySelectorAll('#todayTasks .delete-item')].map(button=>button.getBoundingClientRect().left);
@@ -226,7 +232,7 @@ function renderCalendar() {
     const current=new Date(start);current.setDate(start.getDate()+i);const dKey=toDateKey(current), inMonth=current.getMonth()===m, weekday=i%7;
     const tasks=sortTasks(data.tasks.filter(t=>t.date===dKey)); const deadlines=data.deadlines.filter(d=>isDeadlineOnDate(d,dKey));
     const deadlineSlots=deadlines.length?Math.max(...deadlines.map(d=>deadlineLanes.get(d.id)+1)):0;
-    const deadlineSegments=deadlines.map(d=>{const startKey=d.start.slice(0,10),endKey=d.end.slice(0,10),lane=deadlineLanes.get(d.id);const segmentStart=dKey===startKey||weekday===0,segmentEnd=dKey===endKey||weekday===6;return `<div class="calendar-deadline ${deadlineToneClass(d)} ${segmentStart?'deadline-segment-start':''} ${segmentEnd?'deadline-segment-end':''}" data-deadline-id="${d.id}" style="--deadline-lane:${lane}" title="单击编辑时间段">${segmentStart?`<span>${escapeHTML(d.title)}</span>`:''}</div>`;}).join('');
+    const deadlineSegments=deadlines.map(d=>{const startKey=d.start.slice(0,10),endKey=d.end.slice(0,10),lane=deadlineLanes.get(d.id),startHour=Number(d.start.slice(11,13)),endHour=Number(d.end.slice(11,13));const segmentStart=dKey===startKey||weekday===0,segmentEnd=dKey===endKey||weekday===6,startHalf=dKey===startKey&&startHour>12,endHalf=dKey===endKey&&endHour<=12;return `<div class="calendar-deadline ${deadlineToneClass(d)} ${segmentStart?'deadline-segment-start':''} ${segmentEnd?'deadline-segment-end':''} ${startHalf?'deadline-start-half':''} ${endHalf?'deadline-end-half':''}" data-deadline-id="${d.id}" style="--deadline-lane:${lane}" title="单击编辑时间段">${segmentStart?`<span>${escapeHTML(d.title)}</span>`:''}</div>`;}).join('');
     const taskItems=`${tasks.filter(t=>!t.startTime).slice(0,2).map(t=>`<div class="calendar-task calendar-item ${t.done?'done':''}" data-task-id="${t.id}"><input class="calendar-check" type="checkbox" data-id="${t.id}" ${t.done?'checked':''}/><span>${escapeHTML(t.title)}</span></div>`).join('')}${tasks.filter(t=>t.startTime).slice(0,2).map(t=>`<div class="calendar-event calendar-item ${t.done?'done':''}" data-task-id="${t.id}"><input class="calendar-check" type="checkbox" data-id="${t.id}" ${t.done?'checked':''}/><span>${t.startTime} ${escapeHTML(t.title)}</span></div>`).join('')}`;
     grid.push(`<div class="calendar-day ${inMonth?'':'outside'} ${dKey===todayKey?'today':''}" data-date="${dKey}" style="--deadline-slots:${deadlineSlots};--calendar-extra-height:${Math.max(0,deadlineSlots-1)*25}px" title="点击空白处添加事项"><div class="day-number"><b>${current.getDate()}</b>${dKey===todayKey?'<em>今</em>':''}</div>${deadlineSegments}<div class="calendar-items">${taskItems}</div></div>`);
   }
