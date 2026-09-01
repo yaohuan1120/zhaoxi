@@ -203,10 +203,12 @@ function renderDashboard() {
 function syncDashboardTimeAlignment(){
   const upcoming=[...document.querySelectorAll('#upcomingSchedule .schedule-row small')],recent=[...document.querySelectorAll('#todayTasks .task-schedule-time')];
   [...upcoming,...recent].forEach(element=>element.style.transform='');
-  const scheduleRows=[...document.querySelectorAll('#upcomingSchedule .schedule-row')], deadlineList=document.querySelector('#deadlineList');
-  if(scheduleRows.length&&deadlineList){
+  const scheduleRows=[...document.querySelectorAll('#upcomingSchedule .schedule-row')], scheduleContainer=document.querySelector('#upcomingSchedule'), deadlineList=document.querySelector('#deadlineList');
+  if(scheduleRows.length&&scheduleContainer&&deadlineList){
     const rowHeight=scheduleRows[0].getBoundingClientRect().height;
-    deadlineList.style.height=`${Math.round(rowHeight*3+6)}px`;
+    const highlightHeight=`${Math.round(rowHeight*3+6)}px`;
+    scheduleContainer.style.height=highlightHeight;
+    deadlineList.style.height=highlightHeight;
     deadlineList.querySelectorAll('.deadline-row').forEach(row=>row.style.height=`${Math.round(rowHeight)}px`);
   }
   if(!upcoming.length||!recent.length)return;
@@ -295,7 +297,7 @@ document.querySelector('#presentButton').onclick=()=>{journalDateKey=todayKey;jo
 document.querySelector('#settingsButton').onclick=()=>openLayer(document.querySelector('#settingsModal'));
 document.querySelectorAll('[data-theme-choice]').forEach(button=>button.onclick=()=>{data.theme=button.dataset.themeChoice;persist();applyTheme(data.theme);});
 document.querySelectorAll('[data-font-choice]').forEach(button=>button.onclick=()=>{data.font=button.dataset.fontChoice;persist();applyFont(data.font);});
-document.querySelector('#fontSizeRange').oninput=event=>{data.fontScale=Number(event.target.value);persist();applyFontScale(data.fontScale);};
+document.querySelector('#fontSizeRange').oninput=event=>{data.fontScale=Number(event.target.value);persist();applyFontScale(data.fontScale);requestAnimationFrame(syncDashboardTimeAlignment);};
 document.querySelector('#workspaceBackgroundInput').onchange=async event=>{
   const file=event.target.files?.[0];
   event.target.value='';
