@@ -40,6 +40,7 @@ function selectedFontScale() {
 function applyFontScale(value = selectedFontScale()) {
   const resolved = Math.min(fontScaleMax, Math.max(fontScaleMin, Number(value) || 100));
   const scale = (resolved / 100) * 0.94;
+  document.documentElement.style.setProperty('--layout-scale', String(resolved / 100));
   [11, 12, 13, 14, 15, 19, 26].forEach(size => document.documentElement.style.setProperty(`--font-${size}`, `${(size * scale).toFixed(2)}px`));
   const input = document.querySelector('#fontSizeRange');
   const output = document.querySelector('#fontSizeValue');
