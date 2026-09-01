@@ -10,7 +10,7 @@ const themeKeys = ['blue', 'mint', 'lavender', 'yellow', 'pink', 'orange', 'cyan
 const fontKeys = ['sans', 'rounded', 'serif', 'kaiti'];
 const fontScaleMin = 90;
 const fontScaleMax = 110;
-const defaultBackgroundPaths = ['assets/backgrounds/background-1.jpg', 'assets/backgrounds/background-2.jpg', 'assets/backgrounds/background-3.jpg', 'assets/backgrounds/background-4.jpg'];
+const defaultBackgroundPaths = ['assets/backgrounds/background-1.jpg', 'assets/backgrounds/background-2.jpg', 'assets/backgrounds/background-3.jpg'];
 
 function selectedTheme() { return themeKeys.includes(data.theme) ? data.theme : 'blue'; }
 function applyTheme(theme = selectedTheme()) {
@@ -50,7 +50,8 @@ function applyFontScale(value = selectedFontScale()) {
 }
 
 function workspaceBackground() {
-  const value = data.workspaceBackground;
+  const value = data.workspaceBackground === 'assets/backgrounds/background-4.jpg' ? 'assets/backgrounds/background-3.jpg' : data.workspaceBackground;
+  if (value !== data.workspaceBackground) { data.workspaceBackground = value; persist(); }
   return typeof value === 'string' && (value.startsWith('data:image/') || defaultBackgroundPaths.includes(value)) ? value : '';
 }
 function applyWorkspaceBackground() {
