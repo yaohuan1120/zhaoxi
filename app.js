@@ -195,7 +195,7 @@ function renderDashboard() {
   document.querySelector('#progressCopy').textContent = recent.length ? `已完成 ${done} / ${recent.length} 项，慢慢来。` : '把最近想做的事写下来吧。';
   const long = sortTasks(data.tasks.filter(t=>taskBucket(t)==='longterm')); document.querySelector('#longtermTasks').innerHTML = long.length ? long.map(taskHTML).join('') : '<p class="empty-copy">这里放长期想做的事，可拖拽排序。</p>';
   document.querySelector('#longtermCount').textContent = `${long.length} 项`;
-  const activeDeadlines=data.deadlines.filter(d=>new Date(d.end)>new Date()); document.querySelector('#deadlineList').innerHTML = activeDeadlines.length ? activeDeadlines.sort((a,b)=>new Date(a.end)-new Date(b.end)).map(d=>`<article class="deadline-card deadline-item ${deadlineToneClass(d)}" data-deadline-id="${d.id}" title="单击编辑时间段"><div class="deadline-row"><span class="countdown">${countdown(d.end)}</span><strong>${escapeHTML(d.title)}</strong><span class="deadline-meta"><small>${d.start.slice(5,16).replace('T',' ').replace('-','/')} – ${d.end.slice(5,16).replace('T',' ').replace('-','/')}</small><button class="delete-item" type="button" data-delete-deadline="${d.id}" aria-label="删除时间段" title="删除时间段">×</button></span></div></article>`).join('') : '<p class="empty-copy">暂时没有进行中的重要时间段。</p>';
+  const activeDeadlines=data.deadlines.filter(d=>new Date(d.end)>new Date()); document.querySelector('#deadlineList').innerHTML = activeDeadlines.length ? activeDeadlines.sort((a,b)=>new Date(a.end)-new Date(b.end)).map(d=>`<article class="deadline-card deadline-item" data-deadline-id="${d.id}" title="单击编辑时间段"><div class="deadline-row"><span class="countdown">${countdown(d.end)}</span><strong>${escapeHTML(d.title)}</strong><span class="deadline-meta"><small>${d.start.slice(5,16).replace('T',' ').replace('-','/')} – ${d.end.slice(5,16).replace('T',' ').replace('-','/')}</small><button class="delete-item" type="button" data-delete-deadline="${d.id}" aria-label="删除时间段" title="删除时间段">×</button></span></div></article>`).join('') : '<p class="empty-copy">暂时没有进行中的重要时间段。</p>';
   const events=sortTasks(data.tasks.filter(t=>taskBucket(t)==='recent'&&!t.done&&t.date&&t.date>=todayKey)).slice(0,3);
   document.querySelector('#upcomingSchedule').innerHTML=events.length ? events.map(t=>`<div class="schedule-row schedule-item" data-task-id="${t.id}"><span class="schedule-date">${t.date.slice(5).replace('-','/')}</span><strong>${taskTitleHTML(t.title)}</strong><small>${t.startTime?`${t.startTime}${t.endTime?` – ${t.endTime}`:''}`:''}</small></div>`).join(''):'<p class="empty-copy">暂时没有接下来的待办。</p>';
   requestAnimationFrame(syncDashboardTimeAlignment);
@@ -211,7 +211,7 @@ function syncDashboardTimeAlignment(){
   recent.forEach(group=>group.style.transform=`translateX(${targetRight-group.getBoundingClientRect().right}px)`);
   upcoming.forEach(time=>time.style.transform=`translateX(${targetRight-time.getBoundingClientRect().right}px)`);
 }
-function isDeadlineOnDate(d, day) { const compare = new Date(`${day}T12:00`); return compare >= new Date(d.start) && compare <= new Date(d.end); }
+function isDeadlineOnDate(d, day) { return day >= d.start.slice(0,10) && day <= d.end.slice(0,10); }
 function renderCalendar() {
   const y=activeDate.getFullYear(), m=activeDate.getMonth(); document.querySelector('#calendarTitle').textContent=`${y}年${m+1}月`;
   const first=new Date(y,m,1), startOffset=(first.getDay()+6)%7, start=new Date(y,m,1-startOffset), end=new Date(start), grid=[];
