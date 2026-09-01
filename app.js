@@ -169,11 +169,11 @@ function renderDashboard() {
   document.querySelector('#longtermCount').textContent = `${long.length} 项`;
   const activeDeadlines=data.deadlines.filter(d=>new Date(d.end)>new Date()); document.querySelector('#deadlineList').innerHTML = activeDeadlines.length ? activeDeadlines.sort((a,b)=>new Date(a.end)-new Date(b.end)).map(d=>`<article class="deadline-card deadline-item" data-deadline-id="${d.id}" title="单击编辑时间段"><div class="deadline-row"><span class="countdown">${countdown(d.end)}</span><strong>${escapeHTML(d.title)}</strong><span class="deadline-meta"><small>${d.start.slice(5,16).replace('T',' ').replace('-','/')} – ${d.end.slice(5,16).replace('T',' ').replace('-','/')}</small><button class="delete-item" type="button" data-delete-deadline="${d.id}" aria-label="删除时间段" title="删除时间段">×</button></span></div></article>`).join('') : '<p class="empty-copy">暂时没有进行中的重要时间段。</p>';
   const events=sortTasks(data.tasks.filter(t=>taskBucket(t)==='recent'&&!t.done&&t.date&&t.date>=todayKey)).slice(0,3);
-  document.querySelector('#upcomingSchedule').innerHTML=events.length ? events.map(t=>`<div class="schedule-row schedule-item" data-task-id="${t.id}"><span class="schedule-date">${t.date.slice(5).replace('-','/')}</span><strong>${escapeHTML(t.title)}</strong><small>${t.startTime?`${t.startTime}${t.endTime?` – ${t.endTime}`:''}`:''}</small></div>`).join(''):'<p class="empty-copy">暂时没有接下来的待办。</p>';
+  document.querySelector('#upcomingSchedule').innerHTML=events.length ? events.map(t=>`<div class="schedule-row schedule-item" data-task-id="${t.id}"><i class="schedule-marker" aria-hidden="true"></i><strong>${escapeHTML(t.title)}</strong><span class="schedule-meta"><span class="schedule-date-inline">${t.date.slice(5).replace('-','/')}</span><span class="schedule-time-inline">${t.startTime?`${t.startTime}${t.endTime?` – ${t.endTime}`:''}`:''}</span></span></div>`).join(''):'<p class="empty-copy">暂时没有接下来的待办。</p>';
   requestAnimationFrame(syncDashboardTimeAlignment);
 }
 function syncDashboardTimeAlignment(){
-  const upcoming=[...document.querySelectorAll('#upcomingSchedule .schedule-row small')],recent=[...document.querySelectorAll('#todayTasks .task-schedule-time')];
+  const upcoming=[...document.querySelectorAll('#upcomingSchedule .schedule-meta')],recent=[...document.querySelectorAll('#todayTasks .task-schedule-time')];
   [...upcoming,...recent].forEach(element=>element.style.transform='');
   if(!upcoming.length||!recent.length)return;
   const scheduleList=document.querySelector('#upcomingSchedule').getBoundingClientRect();
