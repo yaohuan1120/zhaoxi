@@ -7,6 +7,7 @@ let journalDateKey = todayKey;
 let journalWasTravelled = false;
 let draggingTaskId = null;
 const themeKeys = ['blue', 'mint', 'lavender', 'yellow', 'pink', 'orange', 'cyan', 'dark'];
+const fontKeys = ['sans', 'rounded', 'serif', 'kaiti'];
 
 function selectedTheme() { return themeKeys.includes(data.theme) ? data.theme : 'blue'; }
 function applyTheme(theme = selectedTheme()) {
@@ -14,6 +15,17 @@ function applyTheme(theme = selectedTheme()) {
   document.documentElement.dataset.theme = resolvedTheme;
   document.querySelectorAll('[data-theme-choice]').forEach(button => {
     const active = button.dataset.themeChoice === resolvedTheme;
+    button.classList.toggle('active', active);
+    button.setAttribute('aria-pressed', String(active));
+  });
+}
+
+function selectedFont() { return fontKeys.includes(data.font) ? data.font : 'sans'; }
+function applyFont(font = selectedFont()) {
+  const resolvedFont = fontKeys.includes(font) ? font : 'sans';
+  document.documentElement.dataset.font = resolvedFont;
+  document.querySelectorAll('[data-font-choice]').forEach(button => {
+    const active = button.dataset.fontChoice === resolvedFont;
     button.classList.toggle('active', active);
     button.setAttribute('aria-pressed', String(active));
   });
@@ -248,6 +260,7 @@ document.querySelector('#timeTravelButton').onclick=()=>{const written=data.logs
 document.querySelector('#presentButton').onclick=()=>{journalDateKey=todayKey;journalWasTravelled=false;renderJournal();};
 document.querySelector('#settingsButton').onclick=()=>openLayer(document.querySelector('#settingsModal'));
 document.querySelectorAll('[data-theme-choice]').forEach(button=>button.onclick=()=>{data.theme=button.dataset.themeChoice;persist();applyTheme(data.theme);});
+document.querySelectorAll('[data-font-choice]').forEach(button=>button.onclick=()=>{data.font=button.dataset.fontChoice;persist();applyFont(data.font);});
 document.querySelector('#workspaceBackgroundInput').onchange=async event=>{
   const file=event.target.files?.[0];
   event.target.value='';
@@ -303,6 +316,7 @@ document.querySelectorAll('.modal-layer').forEach(layer=>layer.addEventListener(
 document.addEventListener('keydown',event=>{if(event.key==='Escape')document.querySelectorAll('.modal-layer:not([hidden])').forEach(layer=>{if(layer.id==='workspaceCropModal')closeWorkspaceCropper();else closeLayer(layer);});});
 populateTimeOptions();
 applyTheme();
+applyFont();
 applyWorkspaceBackground();
 render();
 setInterval(()=>{renderDashboard();bindDynamic();},60000);
