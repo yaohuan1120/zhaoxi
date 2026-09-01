@@ -8,6 +8,8 @@ let journalWasTravelled = false;
 let draggingTaskId = null;
 const themeKeys = ['blue', 'mint', 'lavender', 'yellow', 'pink', 'orange', 'cyan', 'dark'];
 const fontKeys = ['sans', 'rounded', 'serif', 'kaiti'];
+const fontScaleMin = 92;
+const fontScaleMax = 108;
 
 function selectedTheme() { return themeKeys.includes(data.theme) ? data.theme : 'blue'; }
 function applyTheme(theme = selectedTheme()) {
@@ -29,6 +31,20 @@ function applyFont(font = selectedFont()) {
     button.classList.toggle('active', active);
     button.setAttribute('aria-pressed', String(active));
   });
+}
+
+function selectedFontScale() {
+  const value = Number(data.fontScale);
+  return Number.isFinite(value) ? Math.min(fontScaleMax, Math.max(fontScaleMin, value)) : 100;
+}
+function applyFontScale(value = selectedFontScale()) {
+  const resolved = Math.min(fontScaleMax, Math.max(fontScaleMin, Number(value) || 100));
+  const scale = resolved / 100;
+  [11, 12, 13, 14, 15, 19, 26].forEach(size => document.documentElement.style.setProperty(`--font-${size}`, `${(size * scale).toFixed(2)}px`));
+  const input = document.querySelector('#fontSizeRange');
+  const output = document.querySelector('#fontSizeValue');
+  if (input) input.value = String(resolved);
+  if (output) output.textContent = `${resolved}%`;
 }
 
 function workspaceBackground() {
@@ -153,11 +169,21 @@ function formatCN(date) { return new Intl.DateTimeFormat('zh-CN', {year:'numeric
 function formatShort(dateString) { return new Intl.DateTimeFormat('zh-CN', {month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date(dateString)); }
 function formatJournalDate(key) { return new Intl.DateTimeFormat('zh-CN', {year:'numeric',month:'long',day:'numeric',weekday:'long'}).format(dateFromKey(key)); }
 function escapeHTML(str) { return str.replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#039;','"':'&quot;'}[c])); }
+function taskTitleHTML(title) {
+  const chars = Array.from(String(title));
+  const isHan = char => /[\u3400-\u9fff]/.test(char);
+  const isLatinOrNumber = char => /[A-Za-z0-9]/.test(char);
+  return chars.map((char, index) => {
+    const previous = chars[index - 1];
+    const boundary = previous && ((isHan(previous) && isLatinOrNumber(char)) || (isLatinOrNumber(previous) && isHan(char)));
+    return `${boundary ? '<span class="title-boundary" aria-hidden="true"></span>' : ''}${escapeHTML(char)}`;
+  }).join('');
+}
 function getTodayTasks() { return data.tasks.filter(t => t.date === todayKey); }
 function taskBucket(task) { return task.bucket === 'longterm' ? 'longterm' : 'recent'; }
 function sortTasks(tasks) { return [...tasks].sort((a,b) => { const group=task=>task.date?(task.startTime?0:1):2,groupDiff=group(a)-group(b); if(groupDiff)return groupDiff;if(a.date&&b.date)return `${a.date}T${a.startTime||'23:59'}`.localeCompare(`${b.date}T${b.startTime||'23:59'}`);return (a.manualOrder ?? 0)-(b.manualOrder ?? 0); }); }
 function nextManualOrder(bucket='recent') { return data.tasks.filter(task=>!task.date&&taskBucket(task)===bucket).reduce((max,task)=>Math.max(max,Number.isFinite(task.manualOrder)?task.manualOrder:-1),-1)+1; }
-function taskHTML(task) { const draggable=!task.date; const meta=(task.notes||'') ? `<span class="task-meta"><span>${escapeHTML(task.notes)}</span></span>` : ''; const schedule=task.date||task.startTime ? `<span class="task-schedule-time ${task.startTime?'':'date-only'}"><span class="task-date-inline">${task.date ? task.date.slice(5).replace('-','/') : ''}</span><span class="task-time-inline">${task.startTime ? `${task.startTime}${task.endTime ? ` – ${task.endTime}` : ''}` : ''}</span></span>` : ''; return `<div class="task-item ${task.done ? 'done' : ''}" data-task-id="${task.id}" data-task-bucket="${taskBucket(task)}" draggable="${draggable}"><input class="check" type="checkbox" data-id="${task.id}" ${task.done ? 'checked' : ''}/><div class="task-main"><span class="task-title">${escapeHTML(task.title)}</span>${meta}</div>${schedule}<button class="delete-item" data-delete="${task.id}" aria-label="删除事项">×</button></div>`; }
+function taskHTML(task) { const draggable=!task.date; const meta=(task.notes||'') ? `<span class="task-meta"><span>${escapeHTML(task.notes)}</span></span>` : ''; const schedule=task.date||task.startTime ? `<span class="task-schedule-time ${task.startTime?'':'date-only'}"><span class="task-date-inline">${task.date ? task.date.slice(5).replace('-','/') : ''}</span><span class="task-time-inline">${task.startTime ? `${task.startTime}${task.endTime ? ` – ${task.endTime}` : ''}` : ''}</span></span>` : ''; return `<div class="task-item ${task.done ? 'done' : ''}" data-task-id="${task.id}" data-task-bucket="${taskBucket(task)}" draggable="${draggable}"><input class="check" type="checkbox" data-id="${task.id}" ${task.done ? 'checked' : ''}/><div class="task-main"><span class="task-title">${taskTitleHTML(task.title)}</span>${meta}</div>${schedule}<button class="delete-item" data-delete="${task.id}" aria-label="删除事项">×</button></div>`; }
 function countdown(end) { const diff = new Date(end) - new Date(); if(diff <= 0) return '已结束'; const d=Math.floor(diff/864e5),h=Math.floor(diff%864e5/36e5),m=Math.floor(diff%36e5/6e4); return d ? `还剩 ${d} 天 ${h} 小时` : `还剩 ${h} 小时 ${m} 分钟`; }
 function renderDashboard() {
   const recent = sortTasks(data.tasks.filter(t=>taskBucket(t)==='recent')); const done = recent.filter(t=>t.done).length;
@@ -169,7 +195,7 @@ function renderDashboard() {
   document.querySelector('#longtermCount').textContent = `${long.length} 项`;
   const activeDeadlines=data.deadlines.filter(d=>new Date(d.end)>new Date()); document.querySelector('#deadlineList').innerHTML = activeDeadlines.length ? activeDeadlines.sort((a,b)=>new Date(a.end)-new Date(b.end)).map(d=>`<article class="deadline-card deadline-item" data-deadline-id="${d.id}" title="单击编辑时间段"><div class="deadline-row"><span class="countdown">${countdown(d.end)}</span><strong>${escapeHTML(d.title)}</strong><span class="deadline-meta"><small>${d.start.slice(5,16).replace('T',' ').replace('-','/')} – ${d.end.slice(5,16).replace('T',' ').replace('-','/')}</small><button class="delete-item" type="button" data-delete-deadline="${d.id}" aria-label="删除时间段" title="删除时间段">×</button></span></div></article>`).join('') : '<p class="empty-copy">暂时没有进行中的重要时间段。</p>';
   const events=sortTasks(data.tasks.filter(t=>taskBucket(t)==='recent'&&!t.done&&t.date&&t.date>=todayKey)).slice(0,3);
-  document.querySelector('#upcomingSchedule').innerHTML=events.length ? events.map(t=>`<div class="schedule-row schedule-item" data-task-id="${t.id}"><span class="schedule-date">${t.date.slice(5).replace('-','/')}</span><strong>${escapeHTML(t.title)}</strong><small>${t.startTime?`${t.startTime}${t.endTime?` – ${t.endTime}`:''}`:''}</small></div>`).join(''):'<p class="empty-copy">暂时没有接下来的待办。</p>';
+  document.querySelector('#upcomingSchedule').innerHTML=events.length ? events.map(t=>`<div class="schedule-row schedule-item" data-task-id="${t.id}"><span class="schedule-date">${t.date.slice(5).replace('-','/')}</span><strong>${taskTitleHTML(t.title)}</strong><small>${t.startTime?`${t.startTime}${t.endTime?` – ${t.endTime}`:''}`:''}</small></div>`).join(''):'<p class="empty-copy">暂时没有接下来的待办。</p>';
   requestAnimationFrame(syncDashboardTimeAlignment);
 }
 function syncDashboardTimeAlignment(){
@@ -261,6 +287,7 @@ document.querySelector('#presentButton').onclick=()=>{journalDateKey=todayKey;jo
 document.querySelector('#settingsButton').onclick=()=>openLayer(document.querySelector('#settingsModal'));
 document.querySelectorAll('[data-theme-choice]').forEach(button=>button.onclick=()=>{data.theme=button.dataset.themeChoice;persist();applyTheme(data.theme);});
 document.querySelectorAll('[data-font-choice]').forEach(button=>button.onclick=()=>{data.font=button.dataset.fontChoice;persist();applyFont(data.font);});
+document.querySelector('#fontSizeRange').oninput=event=>{data.fontScale=Number(event.target.value);persist();applyFontScale(data.fontScale);};
 document.querySelector('#workspaceBackgroundInput').onchange=async event=>{
   const file=event.target.files?.[0];
   event.target.value='';
@@ -317,6 +344,7 @@ document.addEventListener('keydown',event=>{if(event.key==='Escape')document.que
 populateTimeOptions();
 applyTheme();
 applyFont();
+applyFontScale();
 applyWorkspaceBackground();
 render();
 setInterval(()=>{renderDashboard();bindDynamic();},60000);
