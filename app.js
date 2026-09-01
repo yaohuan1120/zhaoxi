@@ -186,7 +186,7 @@ function taskBucket(task) { return task.bucket === 'longterm' ? 'longterm' : 're
 function sortTasks(tasks) { return [...tasks].sort((a,b) => { const hasDate=task=>Boolean(task.date);if(hasDate(a)!==hasDate(b))return hasDate(a)?-1:1;if(a.date&&b.date){const dateDiff=a.date.localeCompare(b.date);if(dateDiff)return dateDiff;const timeDiff=(a.startTime||'23:59').localeCompare(b.startTime||'23:59');if(timeDiff)return timeDiff;}return (a.manualOrder ?? 0)-(b.manualOrder ?? 0); }); }
 function nextManualOrder(bucket='recent') { return data.tasks.filter(task=>!task.date&&taskBucket(task)===bucket).reduce((max,task)=>Math.max(max,Number.isFinite(task.manualOrder)?task.manualOrder:-1),-1)+1; }
 function taskHTML(task) { const draggable=!task.date; const meta=(task.notes||'') ? `<span class="task-meta"><span>${escapeHTML(task.notes)}</span></span>` : ''; const schedule=task.date||task.startTime ? `<span class="task-schedule-time ${task.startTime?'':'date-only'}"><span class="task-date-inline">${task.date ? task.date.slice(5).replace('-','/') : ''}</span><span class="task-time-inline">${task.startTime ? `${task.startTime}${task.endTime ? ` – ${task.endTime}` : ''}` : ''}</span></span>` : ''; return `<div class="task-item ${task.done ? 'done' : ''}" data-task-id="${task.id}" data-task-bucket="${taskBucket(task)}" draggable="${draggable}"><input class="check" type="checkbox" data-id="${task.id}" ${task.done ? 'checked' : ''}/><div class="task-main"><span class="task-title">${taskTitleHTML(task.title)}</span>${meta}</div>${schedule}<button class="delete-item" data-delete="${task.id}" aria-label="删除事项">×</button></div>`; }
-function countdown(end) { const diff = new Date(end) - new Date(); if(diff <= 0) return '已结束'; const d=Math.floor(diff/864e5),h=Math.floor(diff%864e5/36e5),m=Math.floor(diff%36e5/6e4); return d ? `还剩 ${d} 天 ${h} 小时` : `还剩 ${h} 小时 ${m} 分钟`; }
+function countdown(end) { const diff = new Date(end) - new Date(); if(diff <= 0) return '已结束'; const d=Math.floor(diff/864e5),h=Math.floor(diff%864e5/36e5),m=Math.floor(diff%36e5/6e4); return d ? `⌛️ ${d} 天 ${h} 小时` : `⌛️ ${h} 小时 ${m} 分钟`; }
 function renderDashboard() {
   const recent = sortTasks(data.tasks.filter(t=>taskBucket(t)==='recent')); const done = recent.filter(t=>t.done).length;
   document.querySelector('#todayTasks').innerHTML = recent.length ? recent.map(taskHTML).join('') : '<p class="empty-copy">暂时没有最近待办。</p>';
@@ -211,13 +211,12 @@ function syncDashboardTimeAlignment(){
     deadlineList.style.height=highlightHeight;
     deadlineList.querySelectorAll('.deadline-row').forEach(row=>row.style.height=`${Math.round(rowHeight)}px`);
   }
-  if(!upcoming.length||!recent.length)return;
+  if(!recent.length)return;
   const scheduleList=document.querySelector('#upcomingSchedule').getBoundingClientRect();
   const deleteButtons=[...document.querySelectorAll('#todayTasks .delete-item')].map(button=>button.getBoundingClientRect().left);
   const deleteBoundary=deleteButtons.length?Math.min(...deleteButtons)-8:Infinity;
   const targetRight=Math.min(scheduleList.right-10,deleteBoundary);
   recent.forEach(group=>group.style.transform=`translateX(${targetRight-group.getBoundingClientRect().right}px)`);
-  upcoming.forEach(time=>time.style.transform=`translateX(${targetRight-time.getBoundingClientRect().right}px)`);
 }
 function isDeadlineOnDate(d, day) { return day >= d.start.slice(0,10) && day <= d.end.slice(0,10); }
 function renderCalendar() {
