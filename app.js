@@ -156,13 +156,25 @@ function loadData() {
     }
     return parsed;
   }
-  const year = now.getFullYear(), month = String(now.getMonth() + 1).padStart(2, '0'), day = String(now.getDate()).padStart(2, '0');
-  const deadlineEndDate = new Date(now); deadlineEndDate.setDate(deadlineEndDate.getDate() + 6);
+  const dateAtOffset = offset => {
+    const date = new Date(now);
+    date.setDate(date.getDate() + offset);
+    return toDateKey(date);
+  };
   return { tasks: [
-    {id: crypto.randomUUID(), title: '整理本周课程资料', date: `${year}-${month}-${day}`, startTime: '', endTime: '', done: false, notes: '', bucket: 'recent'},
-    {id: crypto.randomUUID(), title: '联系导师确认选题方向', date: `${year}-${month}-${day}`, startTime: '14:30', endTime: '15:00', done: false, notes: '', bucket: 'recent'},
-    {id: crypto.randomUUID(), title: '准备下周阅读清单', date: '', startTime: '', endTime: '', done: false, notes: '', manualOrder: 0, bucket: 'longterm'}
-  ], deadlines: [{id: crypto.randomUUID(), title: '选课开放时间', start: `${year}-${month}-${day}T09:00`, end: `${toDateKey(deadlineEndDate)}T16:00`, notes: ''}], logs: [] };
+    {id: crypto.randomUUID(), title: '最近待办1', date: dateAtOffset(0), startTime: '09:00', endTime: '10:00', done: false, notes: '', bucket: 'recent'},
+    {id: crypto.randomUUID(), title: '最近待办2', date: dateAtOffset(1), startTime: '', endTime: '', done: false, notes: '', bucket: 'recent'},
+    {id: crypto.randomUUID(), title: '最近待办3', date: dateAtOffset(2), startTime: '14:00', endTime: '15:30', done: false, notes: '', bucket: 'recent'},
+    {id: crypto.randomUUID(), title: '最近待办4', date: '', startTime: '', endTime: '', done: false, notes: '', manualOrder: 0, bucket: 'recent'},
+    {id: crypto.randomUUID(), title: '长期待办1', date: '', startTime: '', endTime: '', done: false, notes: '', manualOrder: 0, bucket: 'longterm'},
+    {id: crypto.randomUUID(), title: '长期待办2', date: '', startTime: '', endTime: '', done: false, notes: '', manualOrder: 1, bucket: 'longterm'}
+  ], deadlines: [
+    {id: crypto.randomUUID(), title: '重要时间段1', start: `${dateAtOffset(0)}T09:00`, end: `${dateAtOffset(6)}T16:00`, notes: ''},
+    {id: crypto.randomUUID(), title: '重要时间段2', start: `${dateAtOffset(1)}T13:00`, end: `${dateAtOffset(7)}T10:00`, notes: ''},
+    {id: crypto.randomUUID(), title: '重要时间段3', start: `${dateAtOffset(2)}T08:00`, end: `${dateAtOffset(5)}T18:00`, notes: ''},
+    {id: crypto.randomUUID(), title: '重要时间段4', start: `${dateAtOffset(3)}T14:00`, end: `${dateAtOffset(9)}T12:00`, notes: ''},
+    {id: crypto.randomUUID(), title: '重要时间段5', start: `${dateAtOffset(4)}T10:00`, end: `${dateAtOffset(8)}T15:00`, notes: ''}
+  ], logs: [] };
 }
 function persist() { localStorage.setItem(key, JSON.stringify(data)); }
 function save() { persist(); render(); }
