@@ -46,14 +46,63 @@ function readImageFile(file) {
     reader.readAsDataURL(file);
   });
 }
-async function compressWorkspaceBackground(file) {
-  const image = await readImageFile(file);
-  const maxEdge = 1440;
-  const ratio = Math.min(1, maxEdge / Math.max(image.naturalWidth, image.naturalHeight));
+let pendingWorkspaceImage = null;
+let workspaceCrop = {zoom: 1, offsetX: 0, offsetY: 0};
+let workspaceCropDrag = null;
+function cropViewportMetrics() {
+  const viewport = document.querySelector('#workspaceCropViewport');
+  if (!pendingWorkspaceImage || !viewport) return null;
+  const width = viewport.clientWidth, height = viewport.clientHeight;
+  if (!width || !height) return null;
+  const baseScale = Math.max(width / pendingWorkspaceImage.naturalWidth, height / pendingWorkspaceImage.naturalHeight);
+  const scale = baseScale * workspaceCrop.zoom;
+  return {width, height, scale, imageWidth: pendingWorkspaceImage.naturalWidth * scale, imageHeight: pendingWorkspaceImage.naturalHeight * scale};
+}
+function clampWorkspaceCrop() {
+  const metrics = cropViewportMetrics();
+  if (!metrics) return;
+  workspaceCrop.offsetX = Math.min(0, Math.max(metrics.width - metrics.imageWidth, workspaceCrop.offsetX));
+  workspaceCrop.offsetY = Math.min(0, Math.max(metrics.height - metrics.imageHeight, workspaceCrop.offsetY));
+}
+function updateWorkspaceCropPreview({recenter = false} = {}) {
+  const metrics = cropViewportMetrics();
+  if (!metrics) return;
+  if (recenter) {
+    workspaceCrop.offsetX = (metrics.width - metrics.imageWidth) / 2;
+    workspaceCrop.offsetY = (metrics.height - metrics.imageHeight) / 2;
+  }
+  clampWorkspaceCrop();
+  const image = document.querySelector('#workspaceCropImage');
+  image.style.width = `${metrics.imageWidth}px`;
+  image.style.height = `${metrics.imageHeight}px`;
+  image.style.transform = `translate(${workspaceCrop.offsetX}px,${workspaceCrop.offsetY}px)`;
+}
+function openWorkspaceCropper() {
+  const cropLayer = document.querySelector('#workspaceCropModal');
+  document.querySelector('#workspaceCropImage').src = pendingWorkspaceImage.src;
+  document.querySelector('#workspaceCropZoom').value = '1';
+  document.querySelector('#workspaceCropZoomValue').textContent = '100%';
+  workspaceCrop = {zoom: 1, offsetX: 0, offsetY: 0};
+  openLayer(cropLayer);
+  requestAnimationFrame(() => updateWorkspaceCropPreview({recenter: true}));
+}
+function closeWorkspaceCropper() {
+  pendingWorkspaceImage = null;
+  workspaceCropDrag = null;
+  document.querySelector('#workspaceCropImage').removeAttribute('src');
+  closeLayer(document.querySelector('#workspaceCropModal'));
+}
+function exportWorkspaceCrop() {
+  const metrics = cropViewportMetrics();
+  const outputWidth = 1440, outputHeight = Math.round(outputWidth * metrics.height / metrics.width);
   const canvas = document.createElement('canvas');
-  canvas.width = Math.max(1, Math.round(image.naturalWidth * ratio));
-  canvas.height = Math.max(1, Math.round(image.naturalHeight * ratio));
-  canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height);
+  canvas.width = outputWidth;
+  canvas.height = outputHeight;
+  const sourceX = -workspaceCrop.offsetX / metrics.scale;
+  const sourceY = -workspaceCrop.offsetY / metrics.scale;
+  const sourceWidth = metrics.width / metrics.scale;
+  const sourceHeight = metrics.height / metrics.scale;
+  canvas.getContext('2d').drawImage(pendingWorkspaceImage, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, outputWidth, outputHeight);
   return canvas.toDataURL('image/jpeg', .8);
 }
 
@@ -192,21 +241,54 @@ document.querySelector('#workspaceBackgroundInput').onchange=async event=>{
   event.target.value='';
   if(!file)return;
   if(!file.type.startsWith('image/')){window.alert('请选择图片文件。');return;}
-  const previous=data.workspaceBackground;
   try{
-    data.workspaceBackground=await compressWorkspaceBackground(file);
-    persist();
-    applyWorkspaceBackground();
+    pendingWorkspaceImage=await readImageFile(file);
+    openWorkspaceCropper();
   }catch(error){
-    data.workspaceBackground=previous;
-    window.alert(error?.name==='QuotaExceededError'?'图片过大，无法保存。请换一张更小的图片。':(error?.message||'背景图片设置失败。'));
+    window.alert(error?.message||'背景图片设置失败。');
   }
 };
 document.querySelector('#clearWorkspaceBackground').onclick=()=>{delete data.workspaceBackground;persist();applyWorkspaceBackground();};
+document.querySelectorAll('[data-close-crop]').forEach(button=>button.onclick=closeWorkspaceCropper);
+document.querySelector('#workspaceCropZoom').oninput=event=>{
+  const previousMetrics=cropViewportMetrics();
+  const centerX=(previousMetrics.width/2-workspaceCrop.offsetX)/previousMetrics.scale;
+  const centerY=(previousMetrics.height/2-workspaceCrop.offsetY)/previousMetrics.scale;
+  workspaceCrop.zoom=Number(event.target.value);
+  const nextMetrics=cropViewportMetrics();
+  workspaceCrop.offsetX=nextMetrics.width/2-centerX*nextMetrics.scale;
+  workspaceCrop.offsetY=nextMetrics.height/2-centerY*nextMetrics.scale;
+  document.querySelector('#workspaceCropZoomValue').textContent=`${Math.round(workspaceCrop.zoom*100)}%`;
+  updateWorkspaceCropPreview();
+};
+document.querySelector('#workspaceCropViewport').onpointerdown=event=>{
+  if(!pendingWorkspaceImage)return;
+  workspaceCropDrag={x:event.clientX,y:event.clientY,offsetX:workspaceCrop.offsetX,offsetY:workspaceCrop.offsetY};
+  event.currentTarget.setPointerCapture(event.pointerId);
+};
+document.querySelector('#workspaceCropViewport').onpointermove=event=>{
+  if(!workspaceCropDrag)return;
+  workspaceCrop.offsetX=workspaceCropDrag.offsetX+event.clientX-workspaceCropDrag.x;
+  workspaceCrop.offsetY=workspaceCropDrag.offsetY+event.clientY-workspaceCropDrag.y;
+  updateWorkspaceCropPreview();
+};
+document.querySelector('#workspaceCropViewport').onpointerup=()=>{workspaceCropDrag=null;};
+document.querySelector('#applyWorkspaceCrop').onclick=()=>{
+  const previous=data.workspaceBackground;
+  try{
+    data.workspaceBackground=exportWorkspaceCrop();
+    persist();
+    applyWorkspaceBackground();
+    closeWorkspaceCropper();
+  }catch(error){
+    data.workspaceBackground=previous;
+    window.alert(error?.name==='QuotaExceededError'?'裁剪后的图片仍然过大，请换一张更小的图片。':(error?.message||'背景图片保存失败。'));
+  }
+};
 document.querySelector('.mobile-menu').onclick=()=>document.body.classList.toggle('mobile-nav-open');
 document.querySelectorAll('[data-close-dialog]').forEach(button=>button.addEventListener('click',()=>closeLayer(button.closest('.modal-layer'))));
-document.querySelectorAll('.modal-layer').forEach(layer=>layer.addEventListener('pointerdown',event=>{if(event.target===layer) closeLayer(layer);}));
-document.addEventListener('keydown',event=>{if(event.key==='Escape')document.querySelectorAll('.modal-layer:not([hidden])').forEach(closeLayer);});
+document.querySelectorAll('.modal-layer').forEach(layer=>layer.addEventListener('pointerdown',event=>{if(event.target===layer){if(layer.id==='workspaceCropModal')closeWorkspaceCropper();else closeLayer(layer);}}));
+document.addEventListener('keydown',event=>{if(event.key==='Escape')document.querySelectorAll('.modal-layer:not([hidden])').forEach(layer=>{if(layer.id==='workspaceCropModal')closeWorkspaceCropper();else closeLayer(layer);});});
 populateTimeOptions();
 applyTheme();
 applyWorkspaceBackground();
