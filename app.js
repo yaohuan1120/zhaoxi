@@ -211,12 +211,13 @@ function syncDashboardTimeAlignment(){
     deadlineList.style.height=highlightHeight;
     deadlineList.querySelectorAll('.deadline-row').forEach(row=>row.style.height=`${Math.round(rowHeight)}px`);
   }
-  if(!recent.length)return;
+  if(!upcoming.length||!recent.length)return;
   const scheduleList=document.querySelector('#upcomingSchedule').getBoundingClientRect();
   const deleteButtons=[...document.querySelectorAll('#todayTasks .delete-item')].map(button=>button.getBoundingClientRect().left);
   const deleteBoundary=deleteButtons.length?Math.min(...deleteButtons)-8:Infinity;
   const targetRight=Math.min(scheduleList.right-10,deleteBoundary);
   recent.forEach(group=>group.style.transform=`translateX(${targetRight-group.getBoundingClientRect().right}px)`);
+  upcoming.forEach(time=>time.style.transform=`translateX(${targetRight-time.getBoundingClientRect().right}px)`);
 }
 function isDeadlineOnDate(d, day) { return day >= d.start.slice(0,10) && day <= d.end.slice(0,10); }
 function renderCalendar() {
