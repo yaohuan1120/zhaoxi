@@ -10,6 +10,7 @@ const themeKeys = ['blue', 'mint', 'lavender', 'yellow', 'pink', 'orange', 'cyan
 const fontKeys = ['sans', 'rounded', 'serif', 'kaiti'];
 const fontScaleMin = 90;
 const fontScaleMax = 110;
+const defaultBackgroundPaths = ['assets/backgrounds/background-1.jpg', 'assets/backgrounds/background-2.jpg', 'assets/backgrounds/background-3.jpg', 'assets/backgrounds/background-4.jpg'];
 
 function selectedTheme() { return themeKeys.includes(data.theme) ? data.theme : 'blue'; }
 function applyTheme(theme = selectedTheme()) {
@@ -50,17 +51,19 @@ function applyFontScale(value = selectedFontScale()) {
 
 function workspaceBackground() {
   const value = data.workspaceBackground;
-  return typeof value === 'string' && value.startsWith('data:image/') ? value : '';
+  return typeof value === 'string' && (value.startsWith('data:image/') || defaultBackgroundPaths.includes(value)) ? value : '';
 }
 function applyWorkspaceBackground() {
   const mainContent = document.querySelector('.main-content');
   const background = workspaceBackground();
+  const usingDefault = defaultBackgroundPaths.includes(background);
   mainContent.classList.toggle('has-custom-background', Boolean(background));
   mainContent.style.setProperty('--workspace-background', background ? `url("${background}")` : 'none');
   const status = document.querySelector('#workspaceBackgroundStatus');
   const clearButton = document.querySelector('#clearWorkspaceBackground');
-  if (status) status.textContent = background ? '已启用自定义背景（已加固定柔光蒙层）。' : '未设置背景；图片只会显示在右侧工作区。';
+  if (status) status.textContent = background ? (usingDefault ? '已启用默认背景（已加固定柔光蒙层）。' : '已启用本地背景（已加固定柔光蒙层）。') : '未设置背景；图片只会显示在右侧工作区。';
   if (clearButton) clearButton.hidden = !background;
+  document.querySelectorAll('[data-default-background]').forEach(button => button.classList.toggle('active', button.dataset.defaultBackground === background));
 }
 function readImageFile(file) {
   return new Promise((resolve, reject) => {
@@ -291,6 +294,12 @@ document.querySelector('#settingsButton').onclick=()=>{setMobileNavigation(false
 document.querySelectorAll('[data-theme-choice]').forEach(button=>button.onclick=()=>{data.theme=button.dataset.themeChoice;persist();applyTheme(data.theme);});
 document.querySelectorAll('[data-font-choice]').forEach(button=>button.onclick=()=>{data.font=button.dataset.fontChoice;persist();applyFont(data.font);});
 document.querySelector('#fontSizeRange').oninput=event=>{data.fontScale=Number(event.target.value);persist();applyFontScale(data.fontScale);requestAnimationFrame(syncDashboardTimeAlignment);};
+const workspaceBackgroundActions=document.querySelector('.workspace-background-row .background-actions');
+if(workspaceBackgroundActions&&!document.querySelector('#openDefaultBackgroundPicker')){
+  document.querySelector('.background-upload-button').firstChild.textContent='本地图片';
+  workspaceBackgroundActions.insertAdjacentHTML('afterbegin','<button class="secondary-button" type="button" id="openDefaultBackgroundPicker">默认背景</button>');
+  workspaceBackgroundActions.parentElement.insertAdjacentHTML('beforeend','<div class="default-background-picker" id="defaultBackgroundPicker" hidden><p>选择一张默认背景</p><div class="default-background-grid" role="group" aria-label="默认背景图">'+defaultBackgroundPaths.map((path,index)=>`<button type="button" class="default-background-option" data-default-background="${path}" aria-label="默认背景 ${index+1}"><img src="${path}" alt="默认背景 ${index+1}"></button>`).join('')+'</div></div>');
+}
 document.querySelector('#workspaceBackgroundInput').onchange=async event=>{
   const file=event.target.files?.[0];
   event.target.value='';
@@ -303,6 +312,16 @@ document.querySelector('#workspaceBackgroundInput').onchange=async event=>{
     window.alert(error?.message||'背景图片设置失败。');
   }
 };
+document.querySelector('#openDefaultBackgroundPicker').onclick=()=>{
+  const picker=document.querySelector('#defaultBackgroundPicker');
+  picker.hidden=!picker.hidden;
+};
+document.querySelectorAll('[data-default-background]').forEach(button=>button.onclick=()=>{
+  data.workspaceBackground=button.dataset.defaultBackground;
+  persist();
+  applyWorkspaceBackground();
+  document.querySelector('#defaultBackgroundPicker').hidden=true;
+});
 document.querySelector('#clearWorkspaceBackground').onclick=()=>{delete data.workspaceBackground;persist();applyWorkspaceBackground();};
 document.querySelectorAll('[data-close-crop]').forEach(button=>button.onclick=closeWorkspaceCropper);
 document.querySelector('#workspaceCropZoom').oninput=event=>{
