@@ -174,11 +174,23 @@ function syncDashboardTimeAlignment(){
 function isDeadlineOnDate(d, day) { const compare = new Date(`${day}T12:00`); return compare >= new Date(d.start) && compare <= new Date(d.end); }
 function renderCalendar() {
   const y=activeDate.getFullYear(), m=activeDate.getMonth(); document.querySelector('#calendarTitle').textContent=`${y}年${m+1}月`;
-  const first=new Date(y,m,1), startOffset=(first.getDay()+6)%7, start=new Date(y,m,1-startOffset), grid=[];
-  for(let i=0;i<42;i++){ const current=new Date(start);current.setDate(start.getDate()+i);const dKey=toDateKey(current), inMonth=current.getMonth()===m;
+  const first=new Date(y,m,1), startOffset=(first.getDay()+6)%7, start=new Date(y,m,1-startOffset), end=new Date(start), grid=[];
+  end.setDate(start.getDate()+41);
+  const rangeStart=toDateKey(start), rangeEnd=toDateKey(end), laneEnds=[], deadlineLanes=new Map();
+  data.deadlines.filter(d=>d.end.slice(0,10)>=rangeStart&&d.start.slice(0,10)<=rangeEnd).sort((a,b)=>a.start.localeCompare(b.start)).forEach(deadline=>{
+    const startKey=deadline.start.slice(0,10), endKey=deadline.end.slice(0,10); let lane=0;
+    while(laneEnds[lane]&&laneEnds[lane]>=startKey)lane++;
+    laneEnds[lane]=endKey; deadlineLanes.set(deadline.id,lane);
+  });
+  for(let i=0;i<42;i++){
+    const current=new Date(start);current.setDate(start.getDate()+i);const dKey=toDateKey(current), inMonth=current.getMonth()===m, weekday=i%7;
     const tasks=sortTasks(data.tasks.filter(t=>t.date===dKey)); const deadlines=data.deadlines.filter(d=>isDeadlineOnDate(d,dKey));
-    grid.push(`<div class="calendar-day ${inMonth?'':'outside'} ${dKey===todayKey?'today':''}" data-date="${dKey}" title="点击空白处添加事项"><div class="day-number"><b>${current.getDate()}</b>${dKey===todayKey?'<em>今</em>':''}</div>${deadlines.map(d=>`<div class="calendar-deadline" data-deadline-id="${d.id}" title="单击编辑时间段">${escapeHTML(d.title)}</div>`).join('')}${tasks.filter(t=>!t.startTime).slice(0,2).map(t=>`<div class="calendar-task calendar-item ${t.done?'done':''}" data-task-id="${t.id}"><input class="calendar-check" type="checkbox" data-id="${t.id}" ${t.done?'checked':''}/><span>${escapeHTML(t.title)}</span></div>`).join('')}${tasks.filter(t=>t.startTime).slice(0,2).map(t=>`<div class="calendar-event calendar-item ${t.done?'done':''}" data-task-id="${t.id}"><input class="calendar-check" type="checkbox" data-id="${t.id}" ${t.done?'checked':''}/><span>${t.startTime} ${escapeHTML(t.title)}</span></div>`).join('')}</div>`);
-  } document.querySelector('#calendarGrid').innerHTML=grid.join('');
+    const deadlineSlots=deadlines.length?Math.max(...deadlines.map(d=>deadlineLanes.get(d.id)+1)):0;
+    const deadlineSegments=deadlines.map(d=>{const startKey=d.start.slice(0,10),endKey=d.end.slice(0,10),lane=deadlineLanes.get(d.id);const segmentStart=dKey===startKey||weekday===0,segmentEnd=dKey===endKey||weekday===6;return `<div class="calendar-deadline ${segmentStart?'deadline-segment-start':''} ${segmentEnd?'deadline-segment-end':''}" data-deadline-id="${d.id}" style="--deadline-lane:${lane}" title="单击编辑时间段">${dKey===startKey?`<span>${escapeHTML(d.title)}</span>`:''}</div>`;}).join('');
+    const taskItems=`${tasks.filter(t=>!t.startTime).slice(0,2).map(t=>`<div class="calendar-task calendar-item ${t.done?'done':''}" data-task-id="${t.id}"><input class="calendar-check" type="checkbox" data-id="${t.id}" ${t.done?'checked':''}/><span>${escapeHTML(t.title)}</span></div>`).join('')}${tasks.filter(t=>t.startTime).slice(0,2).map(t=>`<div class="calendar-event calendar-item ${t.done?'done':''}" data-task-id="${t.id}"><input class="calendar-check" type="checkbox" data-id="${t.id}" ${t.done?'checked':''}/><span>${t.startTime} ${escapeHTML(t.title)}</span></div>`).join('')}`;
+    grid.push(`<div class="calendar-day ${inMonth?'':'outside'} ${dKey===todayKey?'today':''}" data-date="${dKey}" style="--deadline-slots:${deadlineSlots}" title="点击空白处添加事项"><div class="day-number"><b>${current.getDate()}</b>${dKey===todayKey?'<em>今</em>':''}</div>${deadlineSegments}<div class="calendar-items">${taskItems}</div></div>`);
+  }
+  document.querySelector('#calendarGrid').innerHTML=grid.join('');
 }
 function renderJournal() {
   const entry = data.logs.find(log => log.date === journalDateKey);
