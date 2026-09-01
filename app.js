@@ -8,8 +8,8 @@ let journalWasTravelled = false;
 let draggingTaskId = null;
 const themeKeys = ['blue', 'mint', 'lavender', 'yellow', 'pink', 'orange', 'cyan', 'dark'];
 const fontKeys = ['sans', 'rounded', 'serif', 'kaiti'];
-const fontScaleMin = 92;
-const fontScaleMax = 108;
+const fontScaleMin = 90;
+const fontScaleMax = 110;
 
 function selectedTheme() { return themeKeys.includes(data.theme) ? data.theme : 'blue'; }
 function applyTheme(theme = selectedTheme()) {
@@ -39,7 +39,7 @@ function selectedFontScale() {
 }
 function applyFontScale(value = selectedFontScale()) {
   const resolved = Math.min(fontScaleMax, Math.max(fontScaleMin, Number(value) || 100));
-  const scale = resolved / 100;
+  const scale = (resolved / 100) * 0.94;
   [11, 12, 13, 14, 15, 19, 26].forEach(size => document.documentElement.style.setProperty(`--font-${size}`, `${(size * scale).toFixed(2)}px`));
   const input = document.querySelector('#fontSizeRange');
   const output = document.querySelector('#fontSizeValue');
