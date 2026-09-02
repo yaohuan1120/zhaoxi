@@ -172,7 +172,14 @@
       .today-panel .task-item{background:transparent!important;border-radius:0!important;padding-left:0!important;padding-right:0!important;border-bottom:0!important}
       .today-panel .task-item:hover{background:var(--theme-hover)!important}
       .longterm-panel .task-item,.longterm-panel .task-item:hover{background:transparent!important}
-      @media(min-width:611px){.today-panel .task-schedule-time{transform:translateX(10px)!important}}
+      @media(min-width:611px){
+        .today-panel .task-item,.longterm-panel .task-item,.overview-panel .deadline-row{height:42px!important;min-height:42px!important;box-sizing:border-box!important}
+        .today-panel .task-list,.longterm-panel .task-list{gap:0!important}
+        .today-panel .task-title,.longterm-panel .task-title,.overview-panel .deadline-row strong,.today-panel .task-schedule-time,.longterm-panel .task-schedule-time,.overview-panel .deadline-row small{font-size:var(--font-15)!important;line-height:1.25!important}
+        .today-panel .task-item{grid-template-columns:22px minmax(0,1fr) max-content 18px!important;column-gap:6px!important}
+        .today-panel .task-schedule-time{grid-template-columns:max-content max-content!important;column-gap:8px!important;min-width:0!important;justify-self:end!important;transform:none!important}
+        .today-panel .task-date-inline,.today-panel .task-time-inline{width:auto!important;text-align:left!important}
+      }
       .workspace-background-row{flex-wrap:wrap!important}
       .default-background-picker{flex:0 0 100%;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
       .default-background-picker[hidden]{display:none!important}
